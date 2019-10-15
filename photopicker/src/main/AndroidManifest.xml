@@ -1,0 +1,13 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="lv.chi.photopicker">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application>
+
+        <activity
+            android:name=".utils.CameraActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+    </application>
+</manifest>

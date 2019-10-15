@@ -1,0 +1,15 @@
+<resources>
+    <string name="picker_app_name">Picker</string>
+    <string name="picker_gallery">Gallery</string>
+    <string name="picker_camera">Camera</string>
+    <string name="picker_upload">Upload</string>
+    <string name="picker_media_permissions_hint">Grant media permission for easier\ngallery access</string>
+    <string name="picker_empty_media">Your media library is empty</string>
+    <string name="picker_allow">Allow</string>
+    <string name="picker_select_photo">Select photo</string>
+    <string name="picker_no_camera">No camera app is installed</string>
+    <plurals name="picker_selected_count">
+        <item quantity="one">%d photo selected</item>
+        <item quantity="other">%d photos selected</item>
+    </plurals>
+</resources>

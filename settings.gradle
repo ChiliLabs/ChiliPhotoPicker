@@ -1,0 +1,2 @@
+include ':sample', ':photopicker'
+rootProject.name='ChiliPhotoPicker'
