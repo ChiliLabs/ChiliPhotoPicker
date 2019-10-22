@@ -100,19 +100,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
-            <TextView
-                android:id="@+id/grant"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="32dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:text="@string/picker_allow"
-                android:textAppearance="@style/TextAppearance.PhotoPicker.Button"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/permission_text" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/photos"
                 android:layout_width="0dp"
@@ -127,6 +114,19 @@
                 app:layout_constraintTop_toBottomOf="@+id/barrier"
                 app:spanCount="3"
                 tools:listitem="@layout/view_pickable_image" />
+
+            <TextView
+                android:id="@+id/grant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="32dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:text="@string/picker_allow"
+                android:textAppearance="@style/TextAppearance.PhotoPicker.Button"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/permission_text" />
 
             <ProgressBar
                 android:id="@+id/progressbar"
