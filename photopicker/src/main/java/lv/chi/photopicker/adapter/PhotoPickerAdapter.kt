@@ -29,16 +29,18 @@ internal class ImagePickerAdapter(
         position: Int,
         payloads: MutableList<Any>
     ) {
-        val item = getItem(position)
-        holder.view.apply {
-            imageLoader.loadImage(context, photo_item, item.uri)
-            setOnClickListener { onImageClick(item) }
-            checkbox.isChecked = item.selected
-        }
+        payloads.firstOrNull()?.let {
+            holder.view.checkbox.isChecked = getItem(position).selected
+        } ?: super.onBindViewHolder(holder, position, payloads)
     }
 
     override fun onBindViewHolder(holder: ImagePickerViewHolder, position: Int) {
-        // No-op
+        val item = getItem(position)
+        holder.view.apply {
+            imageLoader.loadImage(context, photo_item, item.uri)
+            setOnClickListener { onImageClick(getItem(position)) }
+            checkbox.isChecked = item.selected
+        }
     }
 
     class ImagePickerViewHolder(val view: View) : RecyclerView.ViewHolder(view)
