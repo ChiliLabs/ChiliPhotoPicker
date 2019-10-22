@@ -2,6 +2,8 @@
 
 Library made without DataBinding, RxJava and image loading libraries, to give you opportunity to use it without additional dependencies.
 
+![](images/example.gif)
+
 - Picker styled as bottom sheet dialog
 - Could be used for single or multiple photos pick
 - Allows to choose how images are loaded into ImageView
