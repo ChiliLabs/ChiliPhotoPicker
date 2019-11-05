@@ -42,7 +42,7 @@ implementation "com.github.ChiliLabs:ChiliPhotoPicker:x.y.z"
 ## Usage
 
 - Create new instance of `ImagePickerFragment`
-- Pass preferred `ImageLoader` implementation (ready examples for Glide and Picasso are [here](https://github.com/ChiliLabs/ChiliPhotoPicker/tree/master/sample/src/main/java/lv/chi/picker/loaders))
+- Pass preferred `ImageLoader` implementation (ready examples for Glide and Picasso are [here](https://github.com/ChiliLabs/ChiliPhotoPicker/tree/master/sample/src/main/java/lv/chi/chiliphotopicker/loaders))
 - Pass your file provider authority, so we can store temporary photo from camera
 - Show as dialog
 
@@ -56,7 +56,7 @@ ImagePickerFragment.newInstance(multiple = true)
 ### ImageLoader
 
 We don't want to depend on many image loading libraries, so we have simple `ImageLoader` interface, which you can implement using your preferred library (Glide, Picasso, Coil, etc.)
-We have two working examples of `ImageLoader` implementations - using [Glide](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/sample/src/main/java/lv/chi/picker/loaders/GlideImageLoader.kt) and [Picasso](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/sample/src/main/java/lv/chi/picker/loaders/PicassoImageLoader.kt). You can just copy one of them or write your own implementation
+We have two working examples of `ImageLoader` implementations - using [Glide](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/sample/src/main/java/lv/chi/chiliphotopicker/loaders/GlideImageLoader.kt) and [Picasso](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/sample/src/main/java/lv/chi/chiliphotopicker/loaders/PicassoImageLoader.kt). You can just copy one of them or write your own implementation
 
 ### Callback
 
