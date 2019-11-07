@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="54dp"
-    android:background="@android:color/white">
+    android:layout_height="64dp"
+    android:background="?attr/pickerBackgroundColor">
 
     <ImageView
         android:id="@+id/cancel"
@@ -23,19 +23,21 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:textColor="@color/black"
+        android:textColor="?attr/pickerSecondaryColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/cancel"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="3 photos selected" />
 
-    <Button
-        android:id="@+id/upload"
-        style="@style/Widget.AppCompat.Button.Borderless"
+    <TextView
+        android:id="@+id/select"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/picker_upload"
-        android:textColor="?colorAccent"
+        android:layout_marginEnd="16dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:text="@string/picker_select"
+        android:textAllCaps="true"
+        android:textColor="?attr/pickerControlColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

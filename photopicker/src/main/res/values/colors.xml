@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="transparent">#0000</color>
-    <color name="black_transparent">#1000</color>
     <color name="black">#000</color>
-    <color name="blue">#5F9BB2</color>
+    <color name="white">#FFF</color>
+
+    <color name="divider_light">#1000</color>
+    <color name="background_light">@color/white</color>
+    <color name="controls_light">#5F9BB2</color>
+    <color name="text_primary_light">#8A8A8A</color>
+    <color name="text_secondary_light">@color/black</color>
+
+    <color name="divider_dark">#1FFF</color>
+    <color name="background_dark">#151816</color>
+    <color name="controls_dark">#85C4DD</color>
+    <color name="text_primary_dark">#9A9A9A</color>
+    <color name="text_secondary_dark">#E1E1E1</color>
 </resources>

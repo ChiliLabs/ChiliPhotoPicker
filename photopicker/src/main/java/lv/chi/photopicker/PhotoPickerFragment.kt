@@ -7,14 +7,18 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.StyleRes
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -35,7 +39,7 @@ import lv.chi.photopicker.utils.FileProviders
 import lv.chi.photopicker.utils.NonDismissibleBehavior
 import lv.chi.photopicker.utils.SpacingItemDecoration
 
-class ImagePickerFragment : DialogFragment() {
+class PhotoPickerFragment : DialogFragment() {
 
     private lateinit var photoAdapter: ImagePickerAdapter
 
@@ -47,10 +51,18 @@ class ImagePickerFragment : DialogFragment() {
 
     private var snackBar: Snackbar? = null
 
+    private val cornerRadiusOutValue = TypedValue()
+
+    private var pickerTheme = R.style.ChiliPhotoPicker_Light
+
+    private lateinit var contextWrapper: ContextThemeWrapper
+
     private lateinit var imageLoader: ImageLoader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        contextWrapper = ContextThemeWrapper(context, pickerTheme)
 
         multiple = requireArguments().getBoolean(Key.MULTIPLE)
         photoAdapter = ImagePickerAdapter(::onImageClicked, multiple, imageLoader)
@@ -65,23 +77,26 @@ class ImagePickerFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View =
-        LayoutInflater.from(requireContext()).inflate(
+        LayoutInflater.from(contextWrapper).inflate(
             R.layout.fragment_photo_picker,
             container,
             false
         )
             .apply {
+                contextWrapper.theme.resolveAttribute(R.attr.pickerCornerRadius, cornerRadiusOutValue, true)
+
                 photos.apply {
                     adapter = photoAdapter
                     val margin = context.resources.getDimensionPixelSize(R.dimen.margin_2dp)
                     addItemDecoration(SpacingItemDecoration(margin, margin, margin, margin))
                 }
 
+                camera_container.isVisible = requireArguments().getBoolean(Key.ALLOW_CAMERA)
                 gallery_container.setOnClickListener { pickImageGallery() }
                 camera_container.setOnClickListener { pickImageCamera() }
                 grant.setOnClickListener { grantPermissions() }
 
-                pickerBottomSheetCallback.setMargin(requireContext().resources.getDimensionPixelSize(R.dimen.picker_expanded_margin))
+                pickerBottomSheetCallback.setMargin(requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId))
 
                 behavior = BottomSheetBehavior.from<FrameLayout>(design_bottom_sheet).apply {
                     addBottomSheetCallback(pickerBottomSheetCallback)
@@ -140,20 +155,25 @@ class ImagePickerFragment : DialogFragment() {
         }
     }
 
-    fun imageLoader(imageLoader: ImageLoader): ImagePickerFragment {
+    fun imageLoader(imageLoader: ImageLoader): PhotoPickerFragment {
         this.imageLoader = imageLoader
         return this
     }
 
-    fun authority(authority: String): ImagePickerFragment {
+    fun authority(authority: String): PhotoPickerFragment {
         FileProviders.authority = authority
+        return this
+    }
+
+    fun setTheme(@StyleRes themeRes: Int): PhotoPickerFragment {
+        pickerTheme = themeRes
         return this
     }
 
     private fun remeasureContentDialog() {
         coordinator.doOnLayout {
             val heightLp = design_bottom_sheet.layoutParams
-            heightLp.height = coordinator.measuredHeight + requireContext().resources.getDimensionPixelSize(R.dimen.picker_expanded_margin)
+            heightLp.height = coordinator.measuredHeight + requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId)
             design_bottom_sheet.layoutParams = heightLp
         }
     }
@@ -172,7 +192,7 @@ class ImagePickerFragment : DialogFragment() {
         } else {
             val count = selected.count()
             if (snackBar == null) {
-                val view = LayoutInflater.from(requireContext()).inflate(R.layout.view_snackbar, null)
+                val view = LayoutInflater.from(contextWrapper).inflate(R.layout.view_snackbar, null)
                 snackBar = Snackbar.make(coordinator, "", Snackbar.LENGTH_INDEFINITE)
                     .setBehavior(NonDismissibleBehavior())
                 (snackBar?.view as? ViewGroup)?.apply {
@@ -180,7 +200,7 @@ class ImagePickerFragment : DialogFragment() {
                     removeAllViews()
                     addView(view)
                     findViewById<ImageView>(R.id.cancel).setOnClickListener { pickerState.clearSelected() }
-                    findViewById<Button>(R.id.upload).setOnClickListener { uploadSelected() }
+                    findViewById<TextView>(R.id.select).setOnClickListener { uploadSelected() }
                 }
                 snackBar?.show()
             }
@@ -295,6 +315,7 @@ class ImagePickerFragment : DialogFragment() {
 
     private object Key {
         val MULTIPLE = "multiple"
+        val ALLOW_CAMERA = "allow_camera"
     }
 
     interface Callback {
@@ -302,10 +323,11 @@ class ImagePickerFragment : DialogFragment() {
     }
 
     companion object {
-        fun newInstance(multiple: Boolean) = ImagePickerFragment().apply {
-            arguments = Bundle().apply {
-                putBoolean(Key.MULTIPLE, multiple)
-            }
+        fun newInstance(multiple: Boolean = false, allowCamera: Boolean = true) = PhotoPickerFragment().apply {
+            arguments = bundleOf(
+                Key.MULTIPLE to multiple,
+                Key.ALLOW_CAMERA to allowCamera
+            )
         }
     }
 }
