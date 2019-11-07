@@ -9,6 +9,8 @@ Library made without DataBinding, RxJava and image loading libraries, to give yo
 - Allows to choose how images are loaded into ImageView
 - Takes responsibility for all needed permissions
 - Takes responsibility for fetching gallery/camera result
+- Have two built-in themes - Light and Dark
+- Easy custamizable
 
 
 | No permission                   | Single choice                      | Multiple choice                   |
@@ -43,12 +45,14 @@ implementation "com.github.ChiliLabs:ChiliPhotoPicker:x.y.z"
 
 - Create new instance of `ImagePickerFragment`
 - Pass preferred `ImageLoader` implementation (ready examples for Glide and Picasso are [here](https://github.com/ChiliLabs/ChiliPhotoPicker/tree/master/sample/src/main/java/lv/chi/chiliphotopicker/loaders))
+- Pass built-in or custom theme (by default `ChiliPhotoPicker.Light` is used)
 - Pass your file provider authority, so we can store temporary photo from camera
 - Show as dialog
 
 ``` kotlin
-ImagePickerFragment.newInstance(multiple = true)
+ImagePickerFragment.newInstance(multiple = true, allowCamera = true)
             .imageLoader(GlideImageLoader())
+            .setTheme(R.style.ChiliPhotoPicker_Dark)
             .authority("com.example.your.fileprovider")
             .show(supportFragmentManager, YOUR_TAG)
 ```
@@ -61,6 +65,20 @@ We have two working examples of `ImageLoader` implementations - using [Glide](ht
 ### Callback
 
 Picked photos URIs are returned via callbacks `onImagesPicked` function, so you just need to implement `ImagePickerFragment.Callback` interface in your activity or fragment
+
+### Themes
+
+To customize picker you can use one of [built-in themes](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/photopicker/src/main/res/values/themes.xml) or inherit it rewriting [attributes](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/photopicker/src/main/res/values/attrs.xml) you want (see [example](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/sample/src/main/res/values/styles.xml))
+
+Attributes:
+`pickerBackgroundColor` - background color
+`pickerPrimaryColor` - primary picker color (no permission/empty texts, cancel icon)
+`pickerSecondaryColor` - secondary picker color (snackbar)
+`pickerControlColor` - color of buttons, icons, checkboxes, ripple
+`pickerGalleryIcon` - drawable for Gallery icon (to remove it use `@null` as attribute value)
+`pickerCameraIcon` - drawable for Camera icon (to remove it use `@null` as attribute value)
+`pickerCornerRadius` - background's corners radius
+`pickerDividerColor` - color of line below Gallery/Camera buttons
 
 ## License
 
