@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
     private fun openPicker() {
         PhotoPickerFragment.newInstance(multiple = true, allowCamera = true)
             .imageLoader(GlideImageLoader())
-            .setTheme(R.style.SamplePhotoPicker)
+            .setTheme(R.style.ChiliPhotoPicker_Dark)
             .authority("lv.chi.sample.fileprovider")
             .show(supportFragmentManager, "picker")
     }

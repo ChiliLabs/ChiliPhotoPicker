@@ -11,8 +11,8 @@ import androidx.appcompat.app.AppCompatDialog
 
 class PickerDialog(
     context: Context,
-    theme: Int = R.style.ChiliPhotoPicker_Light
-) : AppCompatDialog(context, theme) {
+    theme: Int = 0
+) : AppCompatDialog(context, getThemeResId(context, theme)) {
 
     init {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -21,11 +21,22 @@ class PickerDialog(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window?.apply {
-            setBackgroundDrawableResource(R.color.transparent)
-            attributes.dimAmount = 0.6f
-            attributes.flags += WindowManager.LayoutParams.FLAG_DIM_BEHIND
             clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        }
+    }
+
+    companion object {
+        @SuppressLint("PrivateResource")
+        fun getThemeResId(context: Context, themeId: Int): Int {
+            var theme = themeId
+            if (theme == 0) {
+                val outValue = TypedValue()
+                theme = if (context.theme.resolveAttribute(R.attr.bottomSheetDialogTheme, outValue, true))
+                    outValue.resourceId
+                else R.style.Theme_Design_Light_BottomSheetDialog
+            }
+            return theme
         }
     }
 }
