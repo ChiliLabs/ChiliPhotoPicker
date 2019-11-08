@@ -3,7 +3,7 @@
 
     <style name="TextAppearance.PhotoPicker.Button" parent="TextAppearance.AppCompat.Medium">
         <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">?colorAccent</item>
+        <item name="android:textColor">?pickerControlColor</item>
         <item name="android:includeFontPadding">true</item>
         <item name="android:textSize">@dimen/textSizeMedium</item>
     </style>

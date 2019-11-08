@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="pickerBackgroundColor" format="reference|color" />
+    <attr name="pickerPrimaryColor" format="reference|color" />
+    <attr name="pickerSecondaryColor" format="reference|color" />
+    <attr name="pickerControlColor" format="reference|color" />
+    <attr name="pickerGalleryIcon" format="reference" />
+    <attr name="pickerCameraIcon" format="reference" />
+    <attr name="pickerCornerRadius" format="reference|dimension" />
+    <attr name="pickerDividerColor" format="reference|color" />
+</resources>

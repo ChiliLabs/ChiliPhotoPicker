@@ -2,7 +2,7 @@
 <resources>
 
     <dimen name="margin_2dp">2dp</dimen>
-    <dimen name="picker_expanded_margin">32dp</dimen>
+    <dimen name="background_corner_radius">24dp</dimen>
 
     <dimen name="textSizeSmall">14sp</dimen>
     <dimen name="textSizeMedium">16sp</dimen>

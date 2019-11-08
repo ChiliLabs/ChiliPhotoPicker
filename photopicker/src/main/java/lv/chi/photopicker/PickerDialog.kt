@@ -9,10 +9,10 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDialog
 
-class PickerDialog(context: Context, theme: Int = 0) : AppCompatDialog(
-    context,
-    getThemeResId(context, theme)
-) {
+class PickerDialog(
+    context: Context,
+    theme: Int = 0
+) : AppCompatDialog(context, getThemeResId(context, theme)) {
 
     init {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -39,5 +39,4 @@ class PickerDialog(context: Context, theme: Int = 0) : AppCompatDialog(
             return theme
         }
     }
-
 }

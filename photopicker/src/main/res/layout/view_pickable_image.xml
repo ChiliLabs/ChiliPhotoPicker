@@ -18,12 +18,13 @@
 
     <CheckBox
         android:id="@+id/checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:background="@null"
+        android:layout_margin="4dp"
         android:button="@drawable/checkbox_selector"
         android:clickable="false"
+        app:useMaterialThemeColors="false"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
