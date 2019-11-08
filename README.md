@@ -71,14 +71,14 @@ Picked photos URIs are returned via callbacks `onImagesPicked` function, so you 
 To customize picker you can use one of [built-in themes](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/photopicker/src/main/res/values/themes.xml) or inherit it rewriting [attributes](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/photopicker/src/main/res/values/attrs.xml) you want (see [example](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/sample/src/main/res/values/styles.xml))
 
 Attributes:
-`pickerBackgroundColor` - background color
-`pickerPrimaryColor` - primary picker color (no permission/empty texts, cancel icon)
-`pickerSecondaryColor` - secondary picker color (snackbar)
-`pickerControlColor` - color of buttons, icons, checkboxes, ripple
-`pickerGalleryIcon` - drawable for Gallery icon (to remove it use `@null` as attribute value)
-`pickerCameraIcon` - drawable for Camera icon (to remove it use `@null` as attribute value)
-`pickerCornerRadius` - background's corners radius
-`pickerDividerColor` - color of line below Gallery/Camera buttons
+- `pickerBackgroundColor` - background color
+- `pickerPrimaryColor` - primary picker color (no permission/empty texts, cancel icon)
+- `pickerSecondaryColor` - secondary picker color (snackbar)
+- `pickerControlColor` - color of buttons, icons, checkboxes, ripple
+- `pickerGalleryIcon` - drawable for Gallery icon (to remove it use `@null` as attribute value)
+- `pickerCameraIcon` - drawable for Camera icon (to remove it use `@null` as attribute value)
+- `pickerCornerRadius` - background's corners radius
+- `pickerDividerColor` - color of line below Gallery/Camera buttons
 
 ## License
 
