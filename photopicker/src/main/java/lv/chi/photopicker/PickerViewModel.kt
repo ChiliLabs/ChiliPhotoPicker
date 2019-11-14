@@ -6,12 +6,13 @@ import android.provider.MediaStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import lv.chi.photopicker.adapter.SelectableImage
 
-internal class PickerState {
+internal class PickerViewModel : ViewModel() {
 
     private val hasContentData = MutableLiveData<Boolean>(false)
     private val inProgressData = MutableLiveData<Boolean>(false)

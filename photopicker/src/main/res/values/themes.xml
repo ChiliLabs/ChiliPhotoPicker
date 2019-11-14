@@ -7,8 +7,8 @@
         <item name="pickerSecondaryColor">@color/text_secondary_light</item>
         <item name="pickerControlColor">@color/controls_light</item>
         <item name="pickerCornerRadius">@dimen/background_corner_radius</item>
-        <item name="pickerCameraIcon">@drawable/ic_camera</item>
-        <item name="pickerGalleryIcon">@drawable/ic_gallery</item>
+        <item name="pickerCameraIcon">@drawable/ic_picker_camera</item>
+        <item name="pickerGalleryIcon">@drawable/ic_picker_gallery</item>
         <item name="pickerDividerColor">@color/divider_light</item>
     </style>
 
@@ -18,8 +18,8 @@
         <item name="pickerSecondaryColor">@color/text_secondary_dark</item>
         <item name="pickerControlColor">@color/controls_dark</item>
         <item name="pickerCornerRadius">@dimen/background_corner_radius</item>
-        <item name="pickerCameraIcon">@drawable/ic_camera</item>
-        <item name="pickerGalleryIcon">@drawable/ic_gallery</item>
+        <item name="pickerCameraIcon">@drawable/ic_picker_camera</item>
+        <item name="pickerGalleryIcon">@drawable/ic_picker_gallery</item>
         <item name="pickerDividerColor">@color/divider_dark</item>
     </style>
 </resources>

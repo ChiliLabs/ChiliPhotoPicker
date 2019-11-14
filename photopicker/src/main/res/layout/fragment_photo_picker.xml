@@ -2,10 +2,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinator"
-    android:background="@color/transparent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="false">
+    android:background="@color/transparent"
+    android:fitsSystemWindows="false"
+    tools:theme="@style/ChiliPhotoPicker.Dark">
 
     <FrameLayout
         android:id="@+id/design_bottom_sheet"
@@ -73,21 +74,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/gallery_container" />
 
             <TextView
-                android:id="@+id/permission_text"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="64dp"
-                android:gravity="center"
-                android:paddingLeft="32dp"
-                android:paddingRight="32dp"
-                android:textColor="?attr/pickerPrimaryColor"
-                android:text="@string/picker_media_permissions_hint"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/barrier" />
-
-            <TextView
                 android:id="@+id/empty_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -95,9 +81,9 @@
                 android:gravity="center"
                 android:paddingLeft="32dp"
                 android:paddingRight="32dp"
-                android:textColor="?attr/pickerPrimaryColor"
                 android:text="@string/picker_empty_media"
                 android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="?attr/pickerPrimaryColor"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
@@ -117,18 +103,13 @@
                 app:spanCount="3"
                 tools:listitem="@layout/view_pickable_image" />
 
-            <TextView
-                android:id="@+id/grant"
-                android:layout_width="wrap_content"
+            <include
+                layout="@layout/view_grant_permission"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="32dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:text="@string/picker_allow"
-                android:textAppearance="@style/TextAppearance.PhotoPicker.Button"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/permission_text" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
             <ProgressBar
                 android:id="@+id/progressbar"
