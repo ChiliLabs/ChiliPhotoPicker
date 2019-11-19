@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.StyleRes
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
@@ -37,11 +38,12 @@ import lv.chi.photopicker.callback.PhotoPickerCallback
 import lv.chi.photopicker.ext.Intents
 import lv.chi.photopicker.ext.isPermissionGranted
 import lv.chi.photopicker.ext.parentAs
+import lv.chi.photopicker.loader.ImageLoader
 import lv.chi.photopicker.utils.CameraActivity
 import lv.chi.photopicker.utils.NonDismissibleBehavior
 import lv.chi.photopicker.utils.SpacingItemDecoration
 
-internal class PhotoPickerFragment : DialogFragment() {
+class PhotoPickerFragment : DialogFragment() {
 
     private lateinit var photoAdapter: ImagePickerAdapter
 
@@ -157,6 +159,24 @@ internal class PhotoPickerFragment : DialogFragment() {
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    @Deprecated("Use ChiliPhotoPickerBuilder.setImageLoader instead")
+    fun imageLoader(imageLoader: ImageLoader): PhotoPickerFragment {
+        PickerConfiguration.setImageLoader(imageLoader)
+        return this
+    }
+
+    @Deprecated("Use ChiliPhotoPickerBuilder.setAuthority instead")
+    fun authority(authority: String): PhotoPickerFragment {
+        PickerConfiguration.setAuthority(authority)
+        return this
+    }
+
+    @Deprecated("Use ChiliPhotoPickerBuilder.setTheme instead")
+    fun setTheme(@StyleRes themeRes: Int): PhotoPickerFragment {
+        PickerConfiguration.setTheme(themeRes)
+        return this
     }
 
     private fun onImageClicked(state: SelectableImage) {
@@ -314,6 +334,12 @@ internal class PhotoPickerFragment : DialogFragment() {
     }
 
     companion object {
-        fun newInstance() = PhotoPickerFragment()
+        internal fun newInstance() = PhotoPickerFragment()
+
+        @Deprecated("Use ChiliPhotoPickerBuilder instead")
+        fun newInstance(multiple: Boolean, allowCamera: Boolean) = PhotoPickerFragment().also {
+            PickerConfiguration.allowMultiple(multiple)
+            PickerConfiguration.allowCamera(allowCamera)
+        }
     }
 }
