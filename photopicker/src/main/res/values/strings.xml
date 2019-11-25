@@ -8,6 +8,7 @@
     <string name="picker_allow">Allow</string>
     <string name="picker_select_photo">Select photo</string>
     <string name="picker_no_camera">No camera app is installed</string>
+    <string name="picker_max_selection_reached">You can pick only %d images</string>
     <plurals name="picker_selected_count">
         <item quantity="one">%d photo selected</item>
         <item quantity="other">%d photos selected</item>

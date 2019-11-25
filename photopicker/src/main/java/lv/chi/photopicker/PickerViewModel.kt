@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import lv.chi.photopicker.adapter.SelectableImage
+import lv.chi.photopicker.utils.SingleLiveEvent
 
 internal class PickerViewModel : ViewModel() {
 
@@ -19,14 +20,22 @@ internal class PickerViewModel : ViewModel() {
     private val hasPermissionData = MutableLiveData<Boolean>(false)
     private val selectedData = MutableLiveData<ArrayList<Uri>>(arrayListOf())
     private val photosData = MutableLiveData<ArrayList<SelectableImage>>(arrayListOf())
+    private val maxSelectionReachedData = SingleLiveEvent<Unit>()
+
+    private var maxSelectionCount = SELECTION_UNDEFINED
 
     val hasContent: LiveData<Boolean> = Transformations.distinctUntilChanged(hasContentData)
     val inProgress: LiveData<Boolean> = inProgressData
     val hasPermission: LiveData<Boolean> = hasPermissionData
     val selected: LiveData<ArrayList<Uri>> = selectedData
     val photos: LiveData<ArrayList<SelectableImage>> = photosData
+    val maxSelectionReached: LiveData<Unit> = maxSelectionReachedData
 
     fun setHasPermission(hasPermission: Boolean) = hasPermissionData.postValue(hasPermission)
+
+    fun setMaxSelectionCount(count: Int) {
+        maxSelectionCount = count
+    }
 
     fun clearSelected() {
         GlobalScope.launch {
@@ -58,8 +67,15 @@ internal class PickerViewModel : ViewModel() {
     fun toggleSelected(photo: SelectableImage) {
         GlobalScope.launch(Dispatchers.IO) {
             val selected = requireNotNull(selectedData.value)
-            if (photo.selected) selected.remove(photo.uri)
-            else selected.add(photo.uri)
+
+            when {
+                photo.selected -> selected.remove(photo.uri)
+                canSelectMore(selected.size) -> selected.add(photo.uri)
+                else -> {
+                    maxSelectionReachedData.postValue(Unit)
+                    return@launch
+                }
+            }
 
             val photos = requireNotNull(photosData.value)
             photos.indexOfFirst { item -> item.id == photo.id }
@@ -71,9 +87,15 @@ internal class PickerViewModel : ViewModel() {
         }
     }
 
+    private fun canSelectMore(size: Int) = maxSelectionCount == SELECTION_UNDEFINED || maxSelectionCount > size
+
     private fun readValueAtCursor(cursor: Cursor): SelectableImage {
         val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
         val uri = "file://${cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))}"
         return SelectableImage(id, Uri.parse(uri), false)
+    }
+
+    companion object {
+        const val SELECTION_UNDEFINED = -1
     }
 }

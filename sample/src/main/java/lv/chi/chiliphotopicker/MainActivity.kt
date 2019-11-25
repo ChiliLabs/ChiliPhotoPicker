@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
         PhotoPickerFragment.newInstance(
             multiple = true,
             allowCamera = true,
+            maxSelection = 5,
             theme = R.style.ChiliPhotoPicker_Dark
         ).show(supportFragmentManager, "picker")
     }

@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.StyleRes
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.os.bundleOf
@@ -33,6 +34,7 @@ import kotlinx.android.synthetic.main.view_grant_permission.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import lv.chi.photopicker.PickerViewModel.Companion.SELECTION_UNDEFINED
 import lv.chi.photopicker.adapter.ImagePickerAdapter
 import lv.chi.photopicker.adapter.SelectableImage
 import lv.chi.photopicker.ext.Intents
@@ -60,6 +62,7 @@ class PhotoPickerFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
 
         vm = ViewModelProviders.of(this).get(PickerViewModel::class.java)
+        vm.setMaxSelectionCount(getMaxSelection(requireArguments()))
 
         contextWrapper = ContextThemeWrapper(context, getTheme(requireArguments()))
 
@@ -134,6 +137,13 @@ class PhotoPickerFragment : DialogFragment() {
             pickerBottomSheetCallback.setNeedTransformation(it)
             if (it) remeasureContentDialog()
         })
+        vm.maxSelectionReached.observe(viewLifecycleOwner, Observer {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.picker_max_selection_reached, getMaxSelection(requireArguments())),
+                Toast.LENGTH_SHORT
+            ).show()
+        })
     }
 
     override fun onRequestPermissionsResult(
@@ -161,8 +171,9 @@ class PhotoPickerFragment : DialogFragment() {
     }
 
     private fun onImageClicked(state: SelectableImage) {
-        if (getAllowMultiple(requireArguments())) vm.toggleSelected(state)
-        else {
+        if (getAllowMultiple(requireArguments())) {
+            vm.toggleSelected(state)
+        } else {
             parentAs<Callback>()?.onImagesPicked(arrayListOf(state.uri))
             dismiss()
         }
@@ -208,7 +219,6 @@ class PhotoPickerFragment : DialogFragment() {
     }
 
     private fun handlePhotos(photos: List<SelectableImage>) {
-        println("timber photos loaded")
         vm.setInProgress(false)
         photoAdapter.submitList(photos.toMutableList())
         empty_text.visibility =
@@ -322,15 +332,18 @@ class PhotoPickerFragment : DialogFragment() {
         private const val KEY_MULTIPLE = "KEY_MULTIPLE"
         private const val KEY_ALLOW_CAMERA = "KEY_ALLOW_CAMERA"
         private const val KEY_THEME = "KEY_THEME"
+        private const val KEY_MAX_SELECTION = "KEY_MAX_SELECTION"
 
         fun newInstance(
             multiple: Boolean = false,
             allowCamera: Boolean = false,
+            maxSelection: Int = SELECTION_UNDEFINED,
             @StyleRes theme: Int = R.style.ChiliPhotoPicker_Light
         ) = PhotoPickerFragment().apply {
             arguments = bundleOf(
                 KEY_MULTIPLE to multiple,
                 KEY_ALLOW_CAMERA to allowCamera,
+                KEY_MAX_SELECTION to maxSelection,
                 KEY_THEME to theme
             )
         }
@@ -338,5 +351,6 @@ class PhotoPickerFragment : DialogFragment() {
         private fun getTheme(args: Bundle) = args.getInt(KEY_THEME)
         private fun getAllowCamera(args: Bundle) = args.getBoolean(KEY_ALLOW_CAMERA)
         private fun getAllowMultiple(args: Bundle) = args.getBoolean(KEY_MULTIPLE)
+        private fun getMaxSelection(args: Bundle) = args.getInt(KEY_MAX_SELECTION)
     }
 }
