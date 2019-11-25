@@ -5,11 +5,9 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import lv.chi.chiliphotopicker.loaders.GlideImageLoader
-import lv.chi.photopicker.ChiliPhotoPickerBuilder
-import lv.chi.photopicker.callback.PhotoPickerCallback
+import lv.chi.photopicker.PhotoPickerFragment
 
-class MainActivity : AppCompatActivity(), PhotoPickerCallback {
+class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,12 +21,10 @@ class MainActivity : AppCompatActivity(), PhotoPickerCallback {
     }
 
     private fun openPicker() {
-        ChiliPhotoPickerBuilder
-            .allowMultiple(true)
-            .allowCamera(true)
-            .setImageLoader(GlideImageLoader())
-            .setTheme(R.style.ChiliPhotoPicker_Dark)
-            .setAuthority("lv.chi.sample.fileprovider")
-            .show(supportFragmentManager, "picker")
+        PhotoPickerFragment.newInstance(
+            multiple = true,
+            allowCamera = true,
+            theme = R.style.ChiliPhotoPicker_Dark
+        ).show(supportFragmentManager, "picker")
     }
 }

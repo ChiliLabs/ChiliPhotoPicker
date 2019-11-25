@@ -17,6 +17,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.StyleRes
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -34,11 +35,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import lv.chi.photopicker.adapter.ImagePickerAdapter
 import lv.chi.photopicker.adapter.SelectableImage
-import lv.chi.photopicker.callback.PhotoPickerCallback
 import lv.chi.photopicker.ext.Intents
 import lv.chi.photopicker.ext.isPermissionGranted
 import lv.chi.photopicker.ext.parentAs
-import lv.chi.photopicker.loader.ImageLoader
 import lv.chi.photopicker.utils.CameraActivity
 import lv.chi.photopicker.utils.NonDismissibleBehavior
 import lv.chi.photopicker.utils.SpacingItemDecoration
@@ -62,11 +61,11 @@ class PhotoPickerFragment : DialogFragment() {
 
         vm = ViewModelProviders.of(this).get(PickerViewModel::class.java)
 
-        contextWrapper = ContextThemeWrapper(context, PickerConfiguration.getTheme())
+        contextWrapper = ContextThemeWrapper(context, getTheme(requireArguments()))
 
         photoAdapter = ImagePickerAdapter(
             onImageClick = ::onImageClicked,
-            multiple = PickerConfiguration.getAllowMultiple(),
+            multiple = getAllowMultiple(requireArguments()),
             imageLoader = PickerConfiguration.getImageLoader()
         )
     }
@@ -100,7 +99,7 @@ class PhotoPickerFragment : DialogFragment() {
                     )
                 }
 
-                camera_container.isVisible = PickerConfiguration.getAllowCamera()
+                camera_container.isVisible = getAllowCamera(requireArguments())
                 gallery_container.setOnClickListener { pickImageGallery() }
                 camera_container.setOnClickListener { pickImageCamera() }
                 findViewById<TextView>(R.id.grant).setOnClickListener { grantPermissions() }
@@ -152,7 +151,7 @@ class PhotoPickerFragment : DialogFragment() {
             Request.ADD_PHOTO_GALLERY, Request.ADD_PHOTO_CAMERA -> {
                 if (resultCode == Activity.RESULT_OK) {
                     Intents.getUriResult(data)?.let {
-                        parentAs<PhotoPickerCallback>()?.onImagesPicked(it)
+                        parentAs<Callback>()?.onImagesPicked(it)
                         dismiss()
                     }
                 }
@@ -161,28 +160,10 @@ class PhotoPickerFragment : DialogFragment() {
         }
     }
 
-    @Deprecated("Use ChiliPhotoPickerBuilder.setImageLoader instead")
-    fun imageLoader(imageLoader: ImageLoader): PhotoPickerFragment {
-        PickerConfiguration.setImageLoader(imageLoader)
-        return this
-    }
-
-    @Deprecated("Use ChiliPhotoPickerBuilder.setAuthority instead")
-    fun authority(authority: String): PhotoPickerFragment {
-        PickerConfiguration.setAuthority(authority)
-        return this
-    }
-
-    @Deprecated("Use ChiliPhotoPickerBuilder.setTheme instead")
-    fun setTheme(@StyleRes themeRes: Int): PhotoPickerFragment {
-        PickerConfiguration.setTheme(themeRes)
-        return this
-    }
-
     private fun onImageClicked(state: SelectableImage) {
-        if (PickerConfiguration.getAllowMultiple()) vm.toggleSelected(state)
+        if (getAllowMultiple(requireArguments())) vm.toggleSelected(state)
         else {
-            parentAs<PhotoPickerCallback>()?.onImagesPicked(arrayListOf(state.uri))
+            parentAs<Callback>()?.onImagesPicked(arrayListOf(state.uri))
             dismiss()
         }
     }
@@ -309,7 +290,7 @@ class PhotoPickerFragment : DialogFragment() {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "image/*"
             addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, PickerConfiguration.getAllowMultiple())
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, getAllowMultiple(requireArguments()))
         }
 
         startActivityForResult(
@@ -321,7 +302,7 @@ class PhotoPickerFragment : DialogFragment() {
     private fun uploadSelected() {
         val selected = ArrayList(vm.selected.value ?: emptyList())
 
-        parentAs<PhotoPickerCallback>()?.onImagesPicked(selected)
+        parentAs<Callback>()?.onImagesPicked(selected)
         dismiss()
     }
 
@@ -333,13 +314,29 @@ class PhotoPickerFragment : DialogFragment() {
         const val ADD_PHOTO_GALLERY = 3
     }
 
-    companion object {
-        internal fun newInstance() = PhotoPickerFragment()
+    interface Callback {
+        fun onImagesPicked(photos: ArrayList<Uri>)
+    }
 
-        @Deprecated("Use ChiliPhotoPickerBuilder instead")
-        fun newInstance(multiple: Boolean, allowCamera: Boolean) = PhotoPickerFragment().also {
-            PickerConfiguration.allowMultiple(multiple)
-            PickerConfiguration.allowCamera(allowCamera)
+    companion object {
+        private const val KEY_MULTIPLE = "KEY_MULTIPLE"
+        private const val KEY_ALLOW_CAMERA = "KEY_ALLOW_CAMERA"
+        private const val KEY_THEME = "KEY_THEME"
+
+        fun newInstance(
+            multiple: Boolean = false,
+            allowCamera: Boolean = false,
+            @StyleRes theme: Int = R.style.ChiliPhotoPicker_Light
+        ) = PhotoPickerFragment().apply {
+            arguments = bundleOf(
+                KEY_MULTIPLE to multiple,
+                KEY_ALLOW_CAMERA to allowCamera,
+                KEY_THEME to theme
+            )
         }
+
+        private fun getTheme(args: Bundle) = args.getInt(KEY_THEME)
+        private fun getAllowCamera(args: Bundle) = args.getBoolean(KEY_ALLOW_CAMERA)
+        private fun getAllowMultiple(args: Bundle) = args.getBoolean(KEY_MULTIPLE)
     }
 }

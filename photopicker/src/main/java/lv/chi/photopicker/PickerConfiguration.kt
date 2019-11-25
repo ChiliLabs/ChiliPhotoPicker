@@ -4,35 +4,17 @@ import lv.chi.photopicker.loader.ImageLoader
 
 internal object PickerConfiguration {
 
-    private lateinit var imageLoader: ImageLoader
-    private lateinit var authority: String
-    private var theme: Int = R.style.ChiliPhotoPicker_Light
-    private var multiple = false
-    private var allowCamera = true
+    private var imageLoader: ImageLoader? = null
+    private var authority: String? = null
 
-    fun setImageLoader(imageLoader: ImageLoader) {
+    fun setUp(imageLoader: ImageLoader, authority: String?) {
         this.imageLoader = imageLoader
-    }
-
-    fun setAuthority(authority: String) {
         this.authority = authority
     }
 
-    fun setTheme(theme: Int) {
-        this.theme = theme
-    }
+    fun getImageLoader(): ImageLoader =
+        imageLoader ?: throw IllegalStateException("ImageLoader is null. You probably forget to call ChiliPhotoPicker.setUp()")
 
-    fun allowMultiple(allow: Boolean) {
-        multiple = allow
-    }
-
-    fun allowCamera(allow: Boolean) {
-        allowCamera = allow
-    }
-
-    fun getImageLoader() = imageLoader
-    fun getAuthority() = authority
-    fun getTheme() = theme
-    fun getAllowMultiple() = multiple
-    fun getAllowCamera() = allowCamera
+    fun getAuthority(): String =
+        authority ?: throw IllegalStateException("Authority is null. You probably forget to pass it to ChiliPhotoPicker.setUp()")
 }
