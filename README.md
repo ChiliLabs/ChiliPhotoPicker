@@ -54,15 +54,15 @@ ChiliPhotoPicker.init(
     )
 ```
 
-Create new instance of `ImagePickerFragment`
+Create new instance of `PhotoPickerFragment`
 - `multiple` - true for multiple image pick, false for single
 - `allowCamera` - true to show Camera button, false to hide
-- `maSelection` - limit images count to pick
+- `maxSelection` - limit images count to pick
 - `theme` - built-in or custom theme (by default `ChiliPhotoPicker.Light` is used)
 - Show as dialog
 
 ``` kotlin
-ImagePickerFragment.newInstance(
+PhotoPickerFragment.newInstance(
         multiple = true, 
         allowCamera = true,
         maxSelection = 5,
@@ -73,6 +73,7 @@ Notes:
 Picker will throw exception if:
 - `loader` was not initialized
 - `authority` was null while accessing camera
+
 ### ImageLoader
 
 We don't want to depend on many image loading libraries, so we have simple `ImageLoader` interface, which you can implement using your preferred library (Glide, Picasso, Coil, etc.)
@@ -80,7 +81,7 @@ We have two working examples of `ImageLoader` implementations - using [Glide](ht
 
 ### Callback
 
-Picked photos URIs are returned via callbacks `onImagesPicked` function, so you just need to implement `ImagePickerFragment.Callback` interface in your activity or fragment
+Picked photos URIs are returned via callbacks `onImagesPicked` function, so you just need to implement `PhotoPickerFragment.Callback` interface in your activity or fragment
 
 ### Themes
 
