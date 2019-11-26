@@ -9,7 +9,7 @@ class App: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        ChiliPhotoPicker.setUp(
+        ChiliPhotoPicker.init(
             loader = GlideImageLoader(),
             authority = "lv.chi.sample.fileprovider"
         )
