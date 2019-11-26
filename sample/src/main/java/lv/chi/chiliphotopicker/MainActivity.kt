@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import lv.chi.chiliphotopicker.loaders.GlideImageLoader
 import lv.chi.photopicker.PhotoPickerFragment
 
 class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
@@ -22,10 +21,11 @@ class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
     }
 
     private fun openPicker() {
-        PhotoPickerFragment.newInstance(multiple = true, allowCamera = true)
-            .imageLoader(GlideImageLoader())
-            .setTheme(R.style.ChiliPhotoPicker_Dark)
-            .authority("lv.chi.sample.fileprovider")
-            .show(supportFragmentManager, "picker")
+        PhotoPickerFragment.newInstance(
+            multiple = true,
+            allowCamera = true,
+            maxSelection = 5,
+            theme = R.style.ChiliPhotoPicker_Dark
+        ).show(supportFragmentManager, "picker")
     }
 }

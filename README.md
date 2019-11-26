@@ -43,20 +43,36 @@ implementation "com.github.ChiliLabs:ChiliPhotoPicker:x.y.z"
 
 ## Usage
 
-- Create new instance of `ImagePickerFragment`
-- Pass preferred `ImageLoader` implementation (ready examples for Glide and Picasso are [here](https://github.com/ChiliLabs/ChiliPhotoPicker/tree/master/sample/src/main/java/lv/chi/chiliphotopicker/loaders))
-- Pass built-in or custom theme (by default `ChiliPhotoPicker.Light` is used)
-- Pass your file provider authority, so we can store temporary photo from camera
+Initialize `ChiliPhotoPicker` in your `Application`'s class `onCreate`
+- `loader` - your preferred `ImageLoader` implementation (ready examples for Glide and Picasso are [here](https://github.com/ChiliLabs/ChiliPhotoPicker/tree/master/sample/src/main/java/lv/chi/chiliphotopicker/loaders))
+- `authority` - your file provider authority. Is needed if you set `allowCamera` to `true`, so picker could store temporary photo from camera
+
+``` kotlin
+ChiliPhotoPicker.init(
+        loader = GlideImageLoader(),
+        authority = "lv.chi.sample.fileprovider"
+    )
+```
+
+Create new instance of `ImagePickerFragment`
+- `multiple` - true for multiple image pick, false for single
+- `allowCamera` - true to show Camera button, false to hide
+- `maSelection` - limit images count to pick
+- `theme` - built-in or custom theme (by default `ChiliPhotoPicker.Light` is used)
 - Show as dialog
 
 ``` kotlin
-ImagePickerFragment.newInstance(multiple = true, allowCamera = true)
-            .imageLoader(GlideImageLoader())
-            .setTheme(R.style.ChiliPhotoPicker_Dark)
-            .authority("com.example.your.fileprovider")
-            .show(supportFragmentManager, YOUR_TAG)
+ImagePickerFragment.newInstance(
+        multiple = true, 
+        allowCamera = true,
+        maxSelection = 5,
+        theme = R.style.ChiliPhotoPicker_Dark
+).show(supportFragmentManager, YOUR_TAG)
 ```
-
+Notes:
+Picker will throw exception if:
+- `loader` was not initialized
+- `authority` was null while accessing camera
 ### ImageLoader
 
 We don't want to depend on many image loading libraries, so we have simple `ImageLoader` interface, which you can implement using your preferred library (Glide, Picasso, Coil, etc.)
