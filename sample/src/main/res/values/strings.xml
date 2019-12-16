@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">ChiliPhotoPicker</string>
+
+    <string name="picker_select">Upload</string>
+    <plurals name="picker_selected_count">
+        <item quantity="one">%d image selected</item>
+        <item quantity="other">%d images selected</item>
+    </plurals>
 </resources>

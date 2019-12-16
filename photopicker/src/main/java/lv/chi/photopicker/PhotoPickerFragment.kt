@@ -138,9 +138,10 @@ class PhotoPickerFragment : DialogFragment() {
             if (it) remeasureContentDialog()
         })
         vm.maxSelectionReached.observe(viewLifecycleOwner, Observer {
+            val max = getMaxSelection(requireArguments())
             Toast.makeText(
                 requireContext(),
-                getString(R.string.picker_max_selection_reached, getMaxSelection(requireArguments())),
+                resources.getQuantityString((R.plurals.picker_max_selection_reached), max, max),
                 Toast.LENGTH_SHORT
             ).show()
         })
