@@ -97,6 +97,10 @@ Attributes:
 - `pickerCornerRadius` - background's corners radius
 - `pickerDividerColor` - color of line below Gallery/Camera buttons
 
+### Localization
+
+It's difficult to translate library to each language, so default strings are on English, but you can easily override them. Example for common strings and plurals are [here](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/sample/src/main/res/values/strings.xml). All strings used in library can be found [here](https://github.com/ChiliLabs/ChiliPhotoPicker/blob/master/photopicker/src/main/res/values/strings.xml)
+
 ## License
 
 ```
