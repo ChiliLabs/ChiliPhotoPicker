@@ -10,11 +10,11 @@
     <string name="picker_select_video">Select Video</string>
     <string name="picker_no_camera">No camera app is installed</string>
     <plurals name="picker_selected_count">
-        <item quantity="one">%d photo selected</item>
-        <item quantity="other">%d photos selected</item>
+        <item quantity="one">%d items selected</item>
+        <item quantity="other">%d items selected</item>
     </plurals>
     <plurals name="picker_max_selection_reached">
-        <item quantity="one">You can pick only %d image</item>
-        <item quantity="other">You can pick only %d images</item>
+        <item quantity="one">You can pick only %d items</item>
+        <item quantity="other">You can pick only %d items</item>
     </plurals>
 </resources>
