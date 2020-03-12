@@ -7,6 +7,7 @@
     <string name="picker_empty_media">Your media library is empty</string>
     <string name="picker_allow">Allow</string>
     <string name="picker_select_photo">Select photo</string>
+    <string name="picker_select_video">Select Video</string>
     <string name="picker_no_camera">No camera app is installed</string>
     <plurals name="picker_selected_count">
         <item quantity="one">%d photo selected</item>

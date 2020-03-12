@@ -15,6 +15,14 @@ import java.io.File
 
 internal class CameraActivity : AppCompatActivity() {
 
+    companion object {
+        private lateinit var captureMode: CaptureMode
+        fun createIntent(context: Context, mode: CaptureMode): Intent {
+            captureMode = mode
+            return Intent(context, CameraActivity::class.java)
+        }
+    }
+
     private lateinit var output: Uri
 
     private var permissionGranted: Boolean = false
@@ -42,7 +50,7 @@ internal class CameraActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == Request.IMAGE_CAPTURE) {
+        if (requestCode == Request.MEDIA_CAPTURE) {
             if (resultCode == RESULT_OK) {
                 setResult(RESULT_OK, Intent().setData(output))
             } else {
@@ -78,16 +86,20 @@ internal class CameraActivity : AppCompatActivity() {
 
     private fun requestImageCapture() =
         startActivityForResult(
-            Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                .putExtra(MediaStore.EXTRA_OUTPUT, output)
-                .also { intent ->
-                    grantUriPermission(
-                        intent.resolveActivity(packageManager).packageName,
-                        output,
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    )
-                },
-            Request.IMAGE_CAPTURE
+            if (captureMode == CaptureMode.Photo)
+                Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            else
+                Intent(
+                    MediaStore.ACTION_VIDEO_CAPTURE
+                ).putExtra(MediaStore.EXTRA_OUTPUT, output)
+                    .also { intent ->
+                        grantUriPermission(
+                            intent.resolveActivity(packageManager).packageName,
+                            output,
+                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        )
+                    },
+            Request.MEDIA_CAPTURE
         )
 
     private fun hasCameraPermission() = ContextCompat.checkSelfPermission(
@@ -96,15 +108,16 @@ internal class CameraActivity : AppCompatActivity() {
     ) == PackageManager.PERMISSION_GRANTED
 
     private object Request {
-        const val IMAGE_CAPTURE = 1
+        const val MEDIA_CAPTURE = 1
         const val CAMERA_ACCESS_PERMISSION = 2
+    }
+
+    enum class CaptureMode {
+        Photo,
+        Video
     }
 
     private object Key {
         const val OUTPUT = "output"
-    }
-
-    companion object {
-        fun createIntent(context: Context) = Intent(context, CameraActivity::class.java)
     }
 }

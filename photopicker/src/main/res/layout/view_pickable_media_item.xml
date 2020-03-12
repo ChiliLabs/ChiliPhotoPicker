@@ -5,7 +5,7 @@
     android:layout_height="wrap_content">
 
     <ImageView
-        android:id="@+id/photo_item"
+        android:id="@+id/media_item"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:foreground="@drawable/bg_ripple_image"
@@ -14,7 +14,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="UnusedAttribute" />
+        tools:ignore="ContentDescription,UnusedAttribute" />
 
     <CheckBox
         android:id="@+id/checkbox"
