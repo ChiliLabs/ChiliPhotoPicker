@@ -58,6 +58,8 @@ class MediaPickerFragment : DialogFragment() {
 
     private lateinit var contextWrapper: ContextThemeWrapper
 
+    private lateinit var pickerType: PickerType
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -71,6 +73,8 @@ class MediaPickerFragment : DialogFragment() {
             multiple = getAllowMultiple(requireArguments()),
             imageLoader = PickerConfiguration.getImageLoader()
         )
+
+        pickerType = getPickerMode(requireArguments())
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -107,11 +111,20 @@ class MediaPickerFragment : DialogFragment() {
                 }
 
                 camera_container.isVisible = getAllowCamera(requireArguments())
-                gallery_container.setOnClickListener { pickImageGallery() }
-                camera_container.setOnClickListener { pickImageCamera() }
+                gallery_container.setOnClickListener {
+                    if (pickerType == PickerType.PHOTO)
+                        pickPhotoGallery()
+                    else
+                        pickVideoGallery()
+                }
+                camera_container.setOnClickListener { pickMediaCamera() }
                 findViewById<TextView>(R.id.grant).setOnClickListener { grantPermissions() }
 
-                pickerBottomSheetCallback.setMargin(requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId))
+                pickerBottomSheetCallback.setMargin(
+                    requireContext().resources.getDimensionPixelSize(
+                        cornerRadiusOutValue.resourceId
+                    )
+                )
             }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -163,7 +176,7 @@ class MediaPickerFragment : DialogFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
-            Request.ADD_PHOTO_GALLERY, Request.ADD_PHOTO_CAMERA -> {
+            Request.ADD_MEDIA_GALLERY, Request.ADD_PHOTO_CAMERA -> {
                 if (resultCode == Activity.RESULT_OK) {
                     Intents.getUriResult(data)?.let {
                         parentAs<Callback>()?.onMediaPicked(it)
@@ -292,7 +305,6 @@ class MediaPickerFragment : DialogFragment() {
     private fun updateState() {
         if (isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE)) {
             vm.setHasPermission(true)
-
             when (getPickerMode(requireArguments())) {
                 PickerType.PHOTO ->
                     loadPhotos()
@@ -328,16 +340,19 @@ class MediaPickerFragment : DialogFragment() {
         private fun calculateSpacing(progress: Float) = margin * progress
     }
 
-    private fun pickImageCamera() {
+    private fun pickMediaCamera() {
         startActivityForResult(
             CameraActivity.createIntent(
                 requireContext(),
-                CameraActivity.CaptureMode.Photo
+                if (pickerType == PickerType.VIDEO)
+                    CameraActivity.CaptureMode.Video
+                else
+                    CameraActivity.CaptureMode.Photo
             ), Request.ADD_PHOTO_CAMERA
         )
     }
 
-    private fun pickImageGallery() {
+    private fun pickPhotoGallery() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "image/*"
@@ -347,7 +362,21 @@ class MediaPickerFragment : DialogFragment() {
 
         startActivityForResult(
             Intent.createChooser(intent, getString(R.string.picker_select_photo)),
-            Request.ADD_PHOTO_GALLERY
+            Request.ADD_MEDIA_GALLERY
+        )
+    }
+
+    private fun pickVideoGallery() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "video/*"
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, getAllowMultiple(requireArguments()))
+        }
+
+        startActivityForResult(
+            Intent.createChooser(intent, getString(R.string.picker_select_video)),
+            Request.ADD_MEDIA_GALLERY
         )
     }
 
@@ -363,7 +392,7 @@ class MediaPickerFragment : DialogFragment() {
     private object Request {
         const val MEDIA_ACCESS_PERMISSION = 1
         const val ADD_PHOTO_CAMERA = 2
-        const val ADD_PHOTO_GALLERY = 3
+        const val ADD_MEDIA_GALLERY = 3
     }
 
     enum class PickerType {
