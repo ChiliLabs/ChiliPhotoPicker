@@ -5,9 +5,9 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import lv.chi.photopicker.PhotoPickerFragment
+import lv.chi.photopicker.MediaPickerFragment
 
-class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
+class MainActivity : AppCompatActivity(), MediaPickerFragment.Callback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,15 +16,16 @@ class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
         picked_url.movementMethod = ScrollingMovementMethod()
     }
 
-    override fun onImagesPicked(photos: ArrayList<Uri>) {
-        picked_url.text = photos.joinToString(separator = "\n") { it.toString() }
+    override fun onMediaPicked(mediaItems: ArrayList<Uri>) {
+        picked_url.text = mediaItems.joinToString(separator = "\n") { it.toString() }
     }
 
     private fun openPicker() {
-        PhotoPickerFragment.newInstance(
+        MediaPickerFragment.newInstance(
             multiple = true,
             allowCamera = true,
             maxSelection = 5,
+            pickerType = MediaPickerFragment.PickerType.VIDEO,
             theme = R.style.ChiliPhotoPicker_Dark
         ).show(supportFragmentManager, "picker")
     }
