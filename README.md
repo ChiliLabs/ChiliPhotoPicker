@@ -1,5 +1,7 @@
 # ChiliPhotoPicker
 
+Made with ❤️ by [Chili Labs](https://chililabs.io).
+
 Library made without DataBinding, RxJava and image loading libraries, to give you opportunity to use it without additional dependencies.
 
 ![](images/example.gif)
