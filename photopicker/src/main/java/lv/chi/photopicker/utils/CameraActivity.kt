@@ -34,8 +34,8 @@ internal class CameraActivity : AppCompatActivity() {
         } else permissionGranted = true
 
         if (savedInstanceState == null) {
-            output = provideImageUri()
-            if (permissionGranted) requestImageCapture()
+            output = if (captureMode == CaptureMode.Photo) provideImageUri() else provideVideoUri()
+            if (permissionGranted) requestMediaCapture()
             else {
                 ActivityCompat.requestPermissions(
                     this,
@@ -68,7 +68,7 @@ internal class CameraActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == Request.CAMERA_ACCESS_PERMISSION && hasCameraPermission()) {
             permissionGranted = true
-            requestImageCapture()
+            requestMediaCapture()
         } else onBackPressed()
     }
 
@@ -84,7 +84,14 @@ internal class CameraActivity : AppCompatActivity() {
         .apply { deleteOnExit() }
         .providerUri(this)
 
-    private fun requestImageCapture() =
+    private fun provideVideoUri() = createTempFile(
+        suffix = ".mp4",
+        directory = File(this.cacheDir, "camera").apply { mkdirs() }
+    )
+        .apply { deleteOnExit() }
+        .providerUri(this)
+
+    private fun requestMediaCapture() =
         startActivityForResult(
             if (captureMode == CaptureMode.Photo)
                 Intent(MediaStore.ACTION_IMAGE_CAPTURE)

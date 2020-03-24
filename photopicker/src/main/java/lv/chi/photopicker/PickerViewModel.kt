@@ -18,8 +18,8 @@ internal class PickerViewModel : ViewModel() {
     private val hasContentData = MutableLiveData(false)
     private val inProgressData = MutableLiveData(false)
     private val hasPermissionData = MutableLiveData(false)
-    private val selectedData = MutableLiveData<ArrayList<Uri>>(arrayListOf())
-    private val mediaData = MutableLiveData<ArrayList<SelectableMedia>>(arrayListOf())
+    private val selectedData = MutableLiveData<MutableList<Uri>>(mutableListOf())
+    private val mediaData = MutableLiveData<MutableList<SelectableMedia>>(mutableListOf())
     private val maxSelectionReachedData = SingleLiveEvent<Unit>()
 
     private var maxSelectionCount = SELECTION_UNDEFINED
@@ -27,8 +27,8 @@ internal class PickerViewModel : ViewModel() {
     val hasContent: LiveData<Boolean> = Transformations.distinctUntilChanged(hasContentData)
     val inProgress: LiveData<Boolean> = inProgressData
     val hasPermission: LiveData<Boolean> = hasPermissionData
-    val selected: LiveData<ArrayList<Uri>> = selectedData
-    val mediaItems: LiveData<ArrayList<SelectableMedia>> = mediaData
+    val selected: LiveData<MutableList<Uri>> = selectedData
+    val mediaItems: LiveData<MutableList<SelectableMedia>> = mediaData
     val maxSelectionReached: LiveData<Unit> = maxSelectionReachedData
 
     fun setHasPermission(hasPermission: Boolean) = hasPermissionData.postValue(hasPermission)
@@ -49,14 +49,16 @@ internal class PickerViewModel : ViewModel() {
 
     fun setMedia(cursor: Cursor?) {
         cursor?.let { c ->
-            val array = arrayListOf<SelectableMedia>()
+            val array = mutableListOf<SelectableMedia>()
             array.addAll(
                 generateSequence { if (c.moveToNext()) c else null }
                     .map { readValueAtCursor(cursor) }
                     .toList()
             )
+
             hasContentData.postValue(array.isNotEmpty())
             mediaData.postValue(array)
+
         }
     }
 

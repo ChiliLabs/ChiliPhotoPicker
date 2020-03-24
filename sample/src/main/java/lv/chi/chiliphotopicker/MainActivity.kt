@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity(), MediaPickerFragment.Callback {
             multiple = true,
             allowCamera = true,
             maxSelection = 5,
-            pickerType = MediaPickerFragment.PickerType.VIDEO,
+            pickerType = MediaPickerFragment.PickerType.ANY,
             theme = R.style.ChiliPhotoPicker_Dark
         ).show(supportFragmentManager, "picker")
     }
