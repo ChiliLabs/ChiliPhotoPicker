@@ -1,0 +1,54 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/media_item"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:foreground="@drawable/bg_ripple_image"
+        android:scaleType="centerCrop"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription,UnusedAttribute" />
+
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="4dp"
+        android:background="@null"
+        android:button="@drawable/checkbox_selector"
+        android:clickable="false"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:useMaterialThemeColors="false" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@+id/media_item"
+        app:layout_constraintTop_toTopOf="@+id/media_item"
+        app:srcCompat="@drawable/ic_video"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/duration_bg"
+        android:paddingStart="@dimen/duration_text_padding"
+        android:paddingEnd="@dimen/duration_text_padding"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/media_item"
+        app:layout_constraintStart_toStartOf="@+id/media_item"
+        tools:text="07:04" />
+</androidx.constraintlayout.widget.ConstraintLayout>

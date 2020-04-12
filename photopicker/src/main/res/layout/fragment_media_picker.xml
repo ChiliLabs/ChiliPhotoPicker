@@ -89,7 +89,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/photos"
+                android:id="@+id/mediaItems"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:clipToPadding="false"
@@ -101,7 +101,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/barrier"
                 app:spanCount="3"
-                tools:listitem="@layout/view_pickable_image" />
+                tools:listitem="@layout/view_pickable_item_photo" />
 
             <include
                 layout="@layout/view_grant_permission"

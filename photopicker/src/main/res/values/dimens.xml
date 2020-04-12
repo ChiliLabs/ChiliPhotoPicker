@@ -3,6 +3,8 @@
 
     <dimen name="margin_2dp">2dp</dimen>
     <dimen name="background_corner_radius">24dp</dimen>
+    <dimen name="duration_bg_corner_radius">8dp</dimen>
+    <dimen name="duration_text_padding">10dp</dimen>
 
     <dimen name="textSizeSmall">14sp</dimen>
     <dimen name="textSizeMedium">16sp</dimen>

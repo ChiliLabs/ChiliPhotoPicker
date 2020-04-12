@@ -3,7 +3,7 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <application>
+    <application android:requestLegacyExternalStorage="true">
 
         <activity
             android:name=".utils.CameraActivity"
