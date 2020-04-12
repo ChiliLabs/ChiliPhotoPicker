@@ -1,5 +1,6 @@
 package lv.chi.photopicker.adapter
 
+import android.media.MediaMetadataRetriever
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,10 +8,13 @@ import android.webkit.MimeTypeMap
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.view_pickable_item_photo.view.*
+import kotlinx.android.synthetic.main.view_pickable_item_photo.view.checkbox
+import kotlinx.android.synthetic.main.view_pickable_item_photo.view.media_item
+import kotlinx.android.synthetic.main.view_pickable_item_video.view.*
 import lv.chi.photopicker.R
 import lv.chi.photopicker.loader.ImageLoader
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 internal class MediaPickerAdapter(
     private val onMediaItemClicked: (SelectableMedia) -> Unit,
@@ -45,6 +49,32 @@ internal class MediaPickerAdapter(
             imageLoader.loadImage(context, media_item, item.uri)
             setOnClickListener { onMediaItemClicked(getItem(position)) }
             checkbox.isChecked = item.selected
+
+            if (getItemViewType(position) == VIEW_TYPE_VIDEO) {
+                val video = getItem(position)
+
+                MediaMetadataRetriever().apply {
+                    setDataSource(context, video.uri)
+                    val videoLength = extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+
+                    duration.text = getDurationString(videoLength)
+                    close()
+                }
+            }
+
+        }
+    }
+
+    private fun getDurationString(duration: Long): String {
+        return try {
+            val minutes = TimeUnit.MILLISECONDS.toMinutes(duration)
+            val seconds = duration % minutes.toInt()
+
+            "${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
+        } catch (exception: ArithmeticException) {
+            val seconds = TimeUnit.MILLISECONDS.toSeconds(duration)
+
+            String.format("00:%02d", seconds)
         }
     }
 
@@ -52,9 +82,9 @@ internal class MediaPickerAdapter(
         val itemAtPosition = getItem(position)
         val extension = MimeTypeMap.getFileExtensionFromUrl(itemAtPosition.uri.toString())
         val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-            extension.toLowerCase(
-                Locale.ROOT
-            )
+                extension.toLowerCase(
+                        Locale.ROOT
+                )
         )
 
         mimeType?.let {
