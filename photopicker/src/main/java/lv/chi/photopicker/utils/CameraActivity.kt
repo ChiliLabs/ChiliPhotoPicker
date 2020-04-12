@@ -91,23 +91,27 @@ internal class CameraActivity : AppCompatActivity() {
         .apply { deleteOnExit() }
         .providerUri(this)
 
-    private fun requestMediaCapture() =
-        startActivityForResult(
-            if (captureMode == CaptureMode.Photo)
-                Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            else
-                Intent(
-                    MediaStore.ACTION_VIDEO_CAPTURE
-                ).putExtra(MediaStore.EXTRA_OUTPUT, output)
-                    .also { intent ->
-                        grantUriPermission(
-                            intent.resolveActivity(packageManager).packageName,
-                            output,
-                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                        )
-                    },
-            Request.MEDIA_CAPTURE
-        )
+    private fun requestMediaCapture() {
+        val cameraIntent = if (captureMode == CaptureMode.Photo)
+            Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        else
+            Intent(
+                MediaStore.ACTION_VIDEO_CAPTURE
+            )
+
+        cameraIntent.also { intent ->
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, output)
+
+            grantUriPermission(
+                intent.resolveActivity(packageManager).packageName,
+                output,
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+
+            startActivityForResult(cameraIntent, Request.MEDIA_CAPTURE)
+        }
+    }
+
 
     private fun hasCameraPermission() = ContextCompat.checkSelfPermission(
         this,
