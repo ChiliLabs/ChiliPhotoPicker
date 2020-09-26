@@ -77,9 +77,7 @@ internal class CameraActivity : AppCompatActivity() {
     private fun provideImageUri() = createTempFile(
         suffix = ".jpg",
         directory = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-            "camera"
-        ).apply { mkdirs() }
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "camera_pics").apply { mkdirs() }
     )
         .apply { deleteOnExit() }
         .providerUri(this)
