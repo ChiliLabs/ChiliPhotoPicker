@@ -74,10 +74,7 @@ internal class CameraActivity : AppCompatActivity() {
 
     private fun provideImageUri() = createTempFile(
         suffix = ".jpg",
-        directory = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-            "Pictures/camera"
-        ).apply { mkdirs() }
+        directory = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Pictures").apply { mkdirs() }
     )
         .apply { deleteOnExit() }
         .providerUri(this)
@@ -89,19 +86,6 @@ internal class CameraActivity : AppCompatActivity() {
             startActivityForResult(cameraIntent, IMAGE_CAPTURE)
         }
     }
-//        startActivityForResult(
-//            Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//                .putExtra(MediaStore.EXTRA_OUTPUT, output)
-//                .also { intent ->
-//                    grantUriPermission(
-//                        intent.resolveActivity(packageManager).packageName,
-//                        output,
-//                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-//                    )
-//                },
-//            Request.IMAGE_CAPTURE
-//        )
-
     private fun hasCameraPermission() = ContextCompat.checkSelfPermission(
         this,
         Manifest.permission.CAMERA
