@@ -68,11 +68,18 @@ internal class CameraActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable(Key.OUTPUT, output)
+        val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            .toString() + "/picFolder/"
+        val newdir = File(dir)
+        newdir.mkdirs()
     }
 
     private fun provideImageUri() = createTempFile(
         suffix = ".jpg",
-        directory = File(Environment.DIRECTORY_PICTURES, "TeamTracking").apply { mkdirs() }
+        directory = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            "camera"
+        ).apply { mkdirs() }
     )
         .apply { deleteOnExit() }
         .providerUri(this)
