@@ -12,7 +12,9 @@ import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import lv.chi.photopicker.utils.CameraActivity.Request.IMAGE_CAPTURE
 import java.io.File
+
 
 internal class CameraActivity : AppCompatActivity() {
 
@@ -72,24 +74,33 @@ internal class CameraActivity : AppCompatActivity() {
 
     private fun provideImageUri() = createTempFile(
         suffix = ".jpg",
-        directory = File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) , "Pictures/camera").apply { mkdirs() }
+        directory = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            "Pictures/camera"
+        ).apply { mkdirs() }
     )
         .apply { deleteOnExit() }
         .providerUri(this)
 
-    private fun requestImageCapture() =
-        startActivityForResult(
-            Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                .putExtra(MediaStore.EXTRA_OUTPUT, output)
-                .also { intent ->
-                    grantUriPermission(
-                        intent.resolveActivity(packageManager).packageName,
-                        output,
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    )
-                },
-            Request.IMAGE_CAPTURE
-        )
+    private fun requestImageCapture() {
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (cameraIntent.resolveActivity(packageManager) != null) {
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, output)
+            startActivityForResult(cameraIntent, IMAGE_CAPTURE)
+        }
+    }
+//        startActivityForResult(
+//            Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//                .putExtra(MediaStore.EXTRA_OUTPUT, output)
+//                .also { intent ->
+//                    grantUriPermission(
+//                        intent.resolveActivity(packageManager).packageName,
+//                        output,
+//                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+//                    )
+//                },
+//            Request.IMAGE_CAPTURE
+//        )
 
     private fun hasCameraPermission() = ContextCompat.checkSelfPermission(
         this,
