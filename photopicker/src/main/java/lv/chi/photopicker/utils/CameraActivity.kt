@@ -4,9 +4,12 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -14,9 +17,13 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_camera.*
 import lv.chi.photopicker.R
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 internal class CameraActivity : AppCompatActivity() {
     private var permissionGranted: Boolean = false
@@ -147,11 +154,82 @@ internal class CameraActivity : AppCompatActivity() {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = Uri.fromFile(photoFile)
-                    setResult(RESULT_OK, Intent().setData(savedUri))
+                    val savedImageBitmap = getBitmap(output.savedUri.toString())!!
+                    val uri = getImageUri(baseContext, savedImageBitmap)
+                    setResult(RESULT_OK, Intent().setData(uri))
                     finish()
                 }
             })
+    }
+
+    private fun getBitmap(path: String): Bitmap? {
+        val uri = Uri.fromFile(File(path))
+        var inputStream: InputStream? = null
+        try {
+            val IMAGE_MAX_SIZE = 1200000 // 1.2MP
+            inputStream = contentResolver.openInputStream(uri)
+
+            // Decode image size
+            var o = BitmapFactory.Options()
+            o.inJustDecodeBounds = true
+            BitmapFactory.decodeStream(inputStream, null, o)
+            inputStream?.close()
+            var scale = 1
+            while (o.outWidth * o.outHeight * (1 / Math.pow(scale.toDouble(), 2.0)) >
+                IMAGE_MAX_SIZE
+            ) {
+                scale++
+            }
+            Log.d(
+                "",
+                "scale = " + scale + ", orig-width: " + o.outWidth + ", orig-height: " + o.outHeight
+            )
+            var b: Bitmap? = null
+            inputStream = contentResolver.openInputStream(uri)
+            if (scale > 1) {
+                scale--
+                // scale to max possible inSampleSize that still yields an image
+                // larger than target
+                o = BitmapFactory.Options()
+                o.inSampleSize = scale
+                b = BitmapFactory.decodeStream(inputStream, null, o)
+
+                // resize to desired dimensions
+                val height = b!!.height
+                val width = b.width
+                Log.d("", "1th scale operation dimenions - width: $width, height: $height")
+                val y = Math.sqrt(
+                    IMAGE_MAX_SIZE
+                            / (width.toDouble() / height)
+                )
+                val x = (y / height) * width
+                val scaledBitmap = Bitmap.createScaledBitmap(
+                    (b), x.toInt(),
+                    y.toInt(), true
+                )
+                b.recycle()
+                b = scaledBitmap
+                System.gc()
+            } else {
+                b = BitmapFactory.decodeStream(inputStream)
+            }
+            inputStream?.close()
+            Log.d(
+                "", ("bitmap size - width: " + b!!.width + ", height: " +
+                        b.height)
+            )
+            return b
+        } catch (e: IOException) {
+            return null
+        }
+    }
+
+    fun getImageUri(inContext: Context, inImage: Bitmap): Uri? {
+        val bytes = ByteArrayOutputStream()
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+        val path =
+            MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, "Title", null)
+        return Uri.parse(path)
     }
 
     private fun getOutputDirectory(context: Context): File {
@@ -178,5 +256,22 @@ internal class CameraActivity : AppCompatActivity() {
 
         fun createIntent(context: Context) = Intent(context, CameraActivity::class.java)
     }
+
+    fun resizeBitmap(getBitmap: Bitmap, maxSize: Int): Bitmap? {
+        var width = getBitmap.width
+        var height = getBitmap.height
+        val x: Double
+        if (width >= height && width > maxSize) {
+            x = width / height.toDouble()
+            width = maxSize
+            height = (maxSize / x).toInt()
+        } else if (height >= width && height > maxSize) {
+            x = height / width.toDouble()
+            height = maxSize
+            width = (maxSize / x).toInt()
+        }
+        return Bitmap.createScaledBitmap(getBitmap, width, height, false)
+    }
+
 
 }
