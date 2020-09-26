@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toFile
 import kotlinx.android.synthetic.main.activity_main.*
 import lv.chi.photopicker.PhotoPickerFragment
 
