@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -71,7 +72,7 @@ internal class CameraActivity : AppCompatActivity() {
 
     private fun provideImageUri() = createTempFile(
         suffix = ".jpg",
-        directory = File(this.cacheDir, "camera").apply { mkdirs() }
+        directory = File(Environment.DIRECTORY_PICTURES, "TeamTracking").apply { mkdirs() }
     )
         .apply { deleteOnExit() }
         .providerUri(this)
