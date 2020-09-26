@@ -4,10 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.hardware.display.DisplayManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.DisplayMetrics
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -15,37 +15,19 @@ import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_camera.*
 import lv.chi.photopicker.R
 import java.io.File
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
+import java.text.SimpleDateFormat
+import java.util.*
 
 internal class CameraActivity : AppCompatActivity() {
     private var permissionGranted: Boolean = false
     private var imageCapture: ImageCapture? = null
     private lateinit var outputDirectory: File
-    private lateinit var cameraExecutor: ExecutorService
-    private var displayId: Int = -1
-
-    private val displayManager by lazy {
-        getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-    }
-
-    private val displayListener = object : DisplayManager.DisplayListener {
-        override fun onDisplayAdded(displayId: Int) = Unit
-        override fun onDisplayRemoved(displayId: Int) = Unit
-        override fun onDisplayChanged(displayId: Int) {
-            if (displayId == this@CameraActivity.displayId) {
-                imageCapture?.targetRotation = preview.display.rotation
-            }
-        }
-    }
+    private var camera: Camera? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (Build.VERSION.SDK_INT >= 23) {
-            permissionGranted = hasCameraPermission()
-        } else permissionGranted = true
+        permissionGranted = if (Build.VERSION.SDK_INT >= 23) {
+            hasCameraPermission()
+        } else true
 
         overridePendingTransition(R.anim.slide_up, R.anim.hold)
         super.onCreate(savedInstanceState)
@@ -53,14 +35,8 @@ internal class CameraActivity : AppCompatActivity() {
         capture.setOnClickListener { takePhoto() }
         close.setOnClickListener { finish() }
 
-        outputDirectory = getOutputDirectory()
-        cameraExecutor = Executors.newSingleThreadExecutor()
-        displayManager.registerDisplayListener(displayListener, null)
-
-        preview.post {
-            displayId = preview.display.displayId
-            tryStartPreview()
-        }
+        outputDirectory = getOutputDirectory(baseContext)
+        tryStartPreview()
     }
 
     override fun onRequestPermissionsResult(
@@ -93,12 +69,6 @@ internal class CameraActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
-        displayManager.unregisterDisplayListener(displayListener)
-    }
-
     override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.hold, R.anim.slide_down)
@@ -112,74 +82,83 @@ internal class CameraActivity : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
+            // Used to bind the lifecycle of cameras to the lifecycle owner
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+            // Preview
+            val preview = Preview.Builder()
+                .build()
+                .also {
+                    it.setSurfaceProvider(preview.createSurfaceProvider())
+                }
+
+            imageCapture = ImageCapture.Builder()
+                .build()
+            // Select back camera as a default
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
             try {
-                val metrics = DisplayMetrics().also { preview.display.getRealMetrics(it) }
-                val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
-                val rotation = preview.display.rotation
-                val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-                val previewUseCase = Preview.Builder()
-                    .setTargetAspectRatio(screenAspectRatio)
-                    .setTargetRotation(rotation)
-                    .build()
-
-                imageCapture = ImageCapture.Builder()
-                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                    .setTargetAspectRatio(screenAspectRatio)
-                    .setTargetRotation(rotation)
-                    .build()
-
+                // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
+
+                // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, previewUseCase, imageCapture
+                    this, cameraSelector, preview
                 )
-                previewUseCase.setSurfaceProvider(preview.createSurfaceProvider())
-            } catch (e: Exception) {
-                e.printStackTrace()
+
+                // camera provides access to CameraControl & CameraInfo
+                camera = cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview, imageCapture
+                )
+
+                // Attach the viewfinder's surface provider to preview use case
+
+            } catch (exc: Exception) {
+                Log.e("CameraActivity", "Use case binding failed", exc)
             }
+
         }, ContextCompat.getMainExecutor(this))
     }
 
     private fun takePhoto() {
-        val imageCapture = imageCapture ?: run {
-            tryStartPreview()
-            return
-        }
+        // Get a stable reference of the modifiable image capture use case
+        val imageCapture = imageCapture ?: return
 
-        val photoFile = File(outputDirectory, FILENAME)
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(photoFile)
-            .build()
+        // Create time-stamped output file to hold the image
+        val photoFile = File(
+            outputDirectory,
+            SimpleDateFormat(
+                "dd-M-yyyy hh:mm:ss", Locale.US
+            ).format(System.currentTimeMillis()) + ".jpg"
+        )
 
+        // Create output options object which contains file + metadata
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        // Set up image capture listener, which is triggered after photo has
+        // been taken
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
-                override fun onError(e: ImageCaptureException) {
-                    e.printStackTrace()
+                override fun onError(exc: ImageCaptureException) {
+                    Log.e("CameraActivity", "Photo capture failed: ${exc.message}", exc)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    setResult(RESULT_OK, Intent().setData(output.savedUri))
+                    val savedUri = Uri.fromFile(photoFile)
+                    setResult(RESULT_OK, Intent().setData(savedUri))
                     finish()
                 }
             })
     }
 
-    private fun getOutputDirectory(): File {
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
+    private fun getOutputDirectory(context: Context): File {
+        val appContext = context.applicationContext
+        val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
             File(it, "Pictures").apply { mkdirs() }
         }
         return if (mediaDir != null && mediaDir.exists())
-            mediaDir else filesDir
-    }
-
-    private fun aspectRatio(width: Int, height: Int): Int {
-        val previewRatio = max(width, height).toDouble() / min(width, height)
-        if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
-            return AspectRatio.RATIO_4_3
-        }
-        return AspectRatio.RATIO_16_9
+            mediaDir else appContext.filesDir
     }
 
     private fun permissionsGranted(): Boolean {
@@ -194,11 +173,8 @@ internal class CameraActivity : AppCompatActivity() {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
-        private const val RATIO_4_3_VALUE = 4.0 / 3.0
-        private const val RATIO_16_9_VALUE = 16.0 / 9.0
-        private const val FILENAME = "camera.jpg"
-        fun createIntent(context: Context) = Intent(context, CameraActivity::class.java)
 
+        fun createIntent(context: Context) = Intent(context, CameraActivity::class.java)
     }
 
 }
