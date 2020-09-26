@@ -7,4 +7,13 @@
         <item name="android:includeFontPadding">true</item>
         <item name="android:textSize">@dimen/textSizeMedium</item>
     </style>
+    <style name="NavigationImageButton" parent="Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="android:layout_width">56dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+    </style>
+    <style name="ImageButton" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+    </style>
 </resources>
