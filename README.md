@@ -37,10 +37,8 @@ allprojects {
 
 Add dependency to application `build.gradle` file,the latest [release version](https://github.com/ChiliLabs/ChiliPhotoPicker/releases):
 
-[![](https://jitpack.io/v/ChiliLabs/ChiliPhotoPicker.svg)](https://jitpack.io/#ChiliLabs/ChiliPhotoPicker)
-
 ```
- implementation 'com.github.AbdulrahmanGamal:ChiliPhotoPicker:0.3.4'
+ implementation 'com.github.AbdulrahmanGamal:ChiliPhotoPicker:0.3.5'
 ```
 
 ## Usage
