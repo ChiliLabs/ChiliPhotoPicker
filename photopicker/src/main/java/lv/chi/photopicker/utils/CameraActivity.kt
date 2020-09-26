@@ -27,7 +27,6 @@ internal class CameraActivity : AppCompatActivity() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     private var displayId: Int = -1
-    private lateinit var processCameraProvider: ProcessCameraProvider
 
     private val displayManager by lazy {
         getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
