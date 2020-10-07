@@ -1,6 +1,7 @@
 package lv.chi.photopicker.utils
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -8,10 +9,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.Size
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import kotlinx.android.synthetic.main.activity_camera.*
 import lv.chi.photopicker.R
 import java.io.File
@@ -79,8 +82,11 @@ internal class CameraActivity : AppCompatActivity() {
         startPreview()
     }
 
+    @SuppressLint("RestrictedApi")
     private fun startPreview() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+
 
         cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -105,11 +111,12 @@ internal class CameraActivity : AppCompatActivity() {
                 cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview
                 )
-
-                // camera provides access to CameraControl & CameraInfo
-                camera = cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture
-                )
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setTargetResolution(Size(640, 480))
+                    .setMaxResolution(Size(640, 480))
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                camera =  cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, imageAnalysis, preview,imageCapture)
 
                 // Attach the viewfinder's surface provider to preview use case
 
@@ -132,8 +139,11 @@ internal class CameraActivity : AppCompatActivity() {
             ).format(System.currentTimeMillis()) + ".jpg"
         )
 
-        // Create output options object which contains file + metadata
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+        val outputOptions = ImageCapture
+            .OutputFileOptions
+            .Builder(photoFile)
+            .build()
+
 
         // Set up image capture listener, which is triggered after photo has
         // been taken
