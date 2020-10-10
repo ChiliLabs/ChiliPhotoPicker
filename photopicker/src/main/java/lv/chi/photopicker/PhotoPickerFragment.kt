@@ -159,10 +159,18 @@ class PhotoPickerFragment : DialogFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
-            Request.ADD_PHOTO_GALLERY, Request.ADD_PHOTO_CAMERA -> {
+            Request.ADD_PHOTO_GALLERY -> {
                 if (resultCode == Activity.RESULT_OK) {
                     Intents.getUriResult(data)?.let {
-                        parentAs<Callback>()?.onImagesPicked(it)
+                        parentAs<Callback>()?.onImagesPicked(it,Request.ADD_PHOTO_GALLERY )
+                        dismiss()
+                    }
+                }
+            }
+            Request.ADD_PHOTO_CAMERA ->{
+                if (resultCode == Activity.RESULT_OK) {
+                    Intents.getUriResult(data)?.let {
+                        parentAs<Callback>()?.onImagesPicked(it,Request.ADD_PHOTO_CAMERA )
                         dismiss()
                     }
                 }
@@ -175,7 +183,7 @@ class PhotoPickerFragment : DialogFragment() {
         if (getAllowMultiple(requireArguments())) {
             vm.toggleSelected(state)
         } else {
-            parentAs<Callback>()?.onImagesPicked(arrayListOf(state.uri))
+            parentAs<Callback>()?.onImagesPicked(arrayListOf(state.uri),Request.ADD_PHOTO_GALLERY )
             dismiss()
         }
     }
@@ -313,7 +321,7 @@ class PhotoPickerFragment : DialogFragment() {
     private fun uploadSelected() {
         val selected = ArrayList(vm.selected.value ?: emptyList())
 
-        parentAs<Callback>()?.onImagesPicked(selected)
+        parentAs<Callback>()?.onImagesPicked(selected,Request.ADD_PHOTO_GALLERY )
         dismiss()
     }
 
@@ -326,7 +334,7 @@ class PhotoPickerFragment : DialogFragment() {
     }
 
     interface Callback {
-        fun onImagesPicked(photos: ArrayList<Uri>)
+        fun onImagesPicked(photos: ArrayList<Uri>,SOURCE:Int)
     }
 
     companion object {

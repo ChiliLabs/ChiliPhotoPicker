@@ -35,12 +35,10 @@ allprojects {
 }
 ```
 
-Add dependency to application `build.gradle` file, where `x.y.z` is the latest [release version](https://github.com/ChiliLabs/ChiliPhotoPicker/releases):
-
-[![](https://jitpack.io/v/ChiliLabs/ChiliPhotoPicker.svg)](https://jitpack.io/#ChiliLabs/ChiliPhotoPicker)
+Add dependency to application `build.gradle` file,the latest [release version](https://github.com/ChiliLabs/ChiliPhotoPicker/releases):
 
 ```
-implementation "com.github.ChiliLabs:ChiliPhotoPicker:x.y.z"
+ implementation 'com.github.AbdulrahmanGamal:ChiliPhotoPicker:0.3.5'
 ```
 
 ## Usage
