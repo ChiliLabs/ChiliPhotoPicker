@@ -143,10 +143,6 @@ internal class CameraActivity : AppCompatActivity() {
             .OutputFileOptions
             .Builder(photoFile)
             .build()
-
-
-        // Set up image capture listener, which is triggered after photo has
-        // been taken
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),

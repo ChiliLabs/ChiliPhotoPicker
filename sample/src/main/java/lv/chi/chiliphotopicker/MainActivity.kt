@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toFile
 import kotlinx.android.synthetic.main.activity_main.*
 import lv.chi.photopicker.PhotoPickerFragment
 
@@ -17,7 +16,7 @@ class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
         picked_url.movementMethod = ScrollingMovementMethod()
     }
 
-    override fun onImagesPicked(photos: ArrayList<Uri>) {
+    override fun onImagesPicked(photos: ArrayList<Uri>, SOURCE: Int) {
         picked_url.text = photos.joinToString(separator = "\n") { it.toString() }
     }
 
