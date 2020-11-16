@@ -1,6 +1,5 @@
 package lv.chi.photopicker
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.util.TypedValue
@@ -14,6 +13,19 @@ class PickerDialog(
     theme: Int = 0
 ) : AppCompatDialog(context, getThemeResId(context, theme)) {
 
+    companion object {
+        fun getThemeResId(context: Context, themeId: Int): Int {
+            var theme = themeId
+            if (theme == 0) {
+                val outValue = TypedValue()
+                theme = if (context.theme.resolveAttribute(R.attr.bottomSheetDialogTheme, outValue, true))
+                    outValue.resourceId
+                else R.style.Theme_Design_Light_BottomSheetDialog
+            }
+            return theme
+        }
+    }
+
     init {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
     }
@@ -26,17 +38,4 @@ class PickerDialog(
         }
     }
 
-    companion object {
-        @SuppressLint("PrivateResource")
-        fun getThemeResId(context: Context, themeId: Int): Int {
-            var theme = themeId
-            if (theme == 0) {
-                val outValue = TypedValue()
-                theme = if (context.theme.resolveAttribute(R.attr.bottomSheetDialogTheme, outValue, true))
-                    outValue.resourceId
-                else R.style.Theme_Design_Light_BottomSheetDialog
-            }
-            return theme
-        }
-    }
 }

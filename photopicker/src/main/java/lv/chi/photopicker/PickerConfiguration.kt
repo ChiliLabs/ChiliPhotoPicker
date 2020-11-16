@@ -12,9 +12,10 @@ internal object PickerConfiguration {
         this.authority = authority
     }
 
-    fun getImageLoader(): ImageLoader =
-        imageLoader ?: throw IllegalStateException("ImageLoader is null. You probably forget to call ChiliPhotoPicker.init()")
+    fun getImageLoader(): ImageLoader = imageLoader
+        ?: throw IllegalStateException("ImageLoader is null. You probably forget to call ChiliPhotoPicker.init()")
 
-    fun getAuthority(): String =
-        authority ?: throw IllegalStateException("Authority is null. You probably forget to pass it to ChiliPhotoPicker.init()")
+    fun getAuthority(): String = authority
+        ?: throw IllegalStateException("Authority is null. You probably forget to pass it to ChiliPhotoPicker.init()")
+
 }

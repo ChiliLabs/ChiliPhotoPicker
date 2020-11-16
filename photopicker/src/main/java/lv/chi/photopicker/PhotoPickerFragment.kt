@@ -12,31 +12,23 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.StyleRes
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.core.os.bundleOf
-import androidx.core.view.doOnLayout
-import androidx.core.view.isVisible
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.fragment_photo_picker.*
-import kotlinx.android.synthetic.main.fragment_photo_picker.view.*
-import kotlinx.android.synthetic.main.view_grant_permission.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import lv.chi.photopicker.PickerViewModel.Companion.SELECTION_UNDEFINED
 import lv.chi.photopicker.adapter.ImagePickerAdapter
 import lv.chi.photopicker.adapter.SelectableImage
+import lv.chi.photopicker.ext.*
 import lv.chi.photopicker.ext.Intents
 import lv.chi.photopicker.ext.isPermissionGranted
 import lv.chi.photopicker.ext.parentAs
@@ -45,6 +37,48 @@ import lv.chi.photopicker.utils.NonDismissibleBehavior
 import lv.chi.photopicker.utils.SpacingItemDecoration
 
 class PhotoPickerFragment : DialogFragment() {
+
+    companion object {
+        private const val KEY_MULTIPLE = "KEY_MULTIPLE"
+        private const val KEY_ALLOW_CAMERA = "KEY_ALLOW_CAMERA"
+        private const val KEY_THEME = "KEY_THEME"
+        private const val KEY_MAX_SELECTION = "KEY_MAX_SELECTION"
+
+        fun newInstance(
+            multiple: Boolean = false,
+            allowCamera: Boolean = false,
+            maxSelection: Int = SELECTION_UNDEFINED,
+            @StyleRes theme: Int = R.style.ChiliPhotoPicker_Light
+        ) = PhotoPickerFragment().apply {
+            arguments = Bundle().apply {
+                putBoolean(KEY_MULTIPLE, multiple)
+                putBoolean(KEY_ALLOW_CAMERA, allowCamera)
+                putInt(KEY_MAX_SELECTION, maxSelection)
+                putInt(KEY_THEME, theme)
+            }
+        }
+
+        private fun getTheme(args: Bundle) = args.getInt(KEY_THEME)
+        private fun getAllowCamera(args: Bundle) = args.getBoolean(KEY_ALLOW_CAMERA)
+        private fun getAllowMultiple(args: Bundle) = args.getBoolean(KEY_MULTIPLE)
+        private fun getMaxSelection(args: Bundle) = args.getInt(KEY_MAX_SELECTION)
+    }
+
+    private object Request {
+        const val MEDIA_ACCESS_PERMISSION = 1
+        const val ADD_PHOTO_CAMERA = 2
+        const val ADD_PHOTO_GALLERY = 3
+    }
+
+    private lateinit var coordinatorLayout: CoordinatorLayout
+    private lateinit var bottomSheetDialog: FrameLayout
+    private lateinit var galleryContainer: FrameLayout
+    private lateinit var cameraContainer: FrameLayout
+    private lateinit var emptyText: TextView
+    private lateinit var photos: RecyclerView
+    private lateinit var permissionTextView: TextView
+    private lateinit var grantTextView: TextView
+    private lateinit var progressBar: ProgressBar
 
     private lateinit var photoAdapter: ImagePickerAdapter
 
@@ -61,7 +95,7 @@ class PhotoPickerFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        vm = ViewModelProviders.of(this).get(PickerViewModel::class.java)
+        vm = ViewModelProvider(this).get(PickerViewModel::class.java)
         vm.setMaxSelectionCount(getMaxSelection(requireArguments()))
 
         contextWrapper = ContextThemeWrapper(context, getTheme(requireArguments()))
@@ -86,35 +120,44 @@ class PhotoPickerFragment : DialogFragment() {
             R.layout.fragment_photo_picker,
             container,
             false
-        )
-            .apply {
-                contextWrapper.theme.resolveAttribute(R.attr.pickerCornerRadius, cornerRadiusOutValue, true)
+        ).apply {
+            contextWrapper.theme.resolveAttribute(R.attr.pickerCornerRadius, cornerRadiusOutValue, true)
 
-                photos.apply {
-                    adapter = photoAdapter
-                    val margin = context.resources.getDimensionPixelSize(R.dimen.margin_2dp)
-                    addItemDecoration(SpacingItemDecoration(margin, margin, margin, margin))
-                    layoutManager = GridLayoutManager(
-                        requireContext(),
-                        if (orientation() == Configuration.ORIENTATION_LANDSCAPE) 5 else 3,
-                        RecyclerView.VERTICAL,
-                        false
-                    )
-                }
+            coordinatorLayout = findViewById(R.id.coordinatorLayout)
+            bottomSheetDialog = findViewById(R.id.bottom_sheet)
+            galleryContainer = findViewById(R.id.gallery_container)
+            cameraContainer = findViewById(R.id.camera_container)
+            emptyText = findViewById(R.id.empty_text)
+            photos = findViewById(R.id.photos)
+            permissionTextView = findViewById(R.id.permission_text_view)
+            grantTextView = findViewById(R.id.grant_text_view)
+            progressBar = findViewById(R.id.progress_bar)
 
-                camera_container.isVisible = getAllowCamera(requireArguments())
-                gallery_container.setOnClickListener { pickImageGallery() }
-                camera_container.setOnClickListener { pickImageCamera() }
-                findViewById<TextView>(R.id.grant).setOnClickListener { grantPermissions() }
-
-                pickerBottomSheetCallback.setMargin(requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId))
+            photos.apply {
+                adapter = photoAdapter
+                val margin = context.resources.getDimensionPixelSize(R.dimen.margin_2dp)
+                addItemDecoration(SpacingItemDecoration(margin, margin, margin, margin))
+                layoutManager = GridLayoutManager(
+                    requireContext(),
+                    if (orientation() == Configuration.ORIENTATION_LANDSCAPE) 5 else 3,
+                    RecyclerView.VERTICAL,
+                    false
+                )
             }
+
+            cameraContainer.isVisible = getAllowCamera(requireArguments())
+            galleryContainer.setOnClickListener { pickImageGallery() }
+            cameraContainer.setOnClickListener { pickImageCamera() }
+            grantTextView.setOnClickListener { grantPermissions() }
+
+            pickerBottomSheetCallback.setMargin(requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId))
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        coordinator.doOnLayout {
-            behavior = BottomSheetBehavior.from<FrameLayout>(design_bottom_sheet).apply {
+        coordinatorLayout.doOnLayout {
+            behavior = BottomSheetBehavior.from(bottomSheetDialog).apply {
                 addBottomSheetCallback(pickerBottomSheetCallback)
                 isHideable = true
                 skipCollapsed = false
@@ -126,18 +169,18 @@ class PhotoPickerFragment : DialogFragment() {
 
         if (savedInstanceState == null) updateState()
 
-        vm.hasPermission.observe(viewLifecycleOwner, Observer { handlePermission(it) })
-        vm.selected.observe(viewLifecycleOwner, Observer { handleSelected(it) })
-        vm.photos.observe(viewLifecycleOwner, Observer { handlePhotos(it) })
-        vm.inProgress.observe(viewLifecycleOwner, Observer {
+        vm.hasPermission.observe(viewLifecycleOwner, { handlePermission(it) })
+        vm.selected.observe(viewLifecycleOwner, { handleSelected(it) })
+        vm.photos.observe(viewLifecycleOwner, { handlePhotos(it) })
+        vm.inProgress.observe(viewLifecycleOwner, {
             photos.visibility = if (it) View.INVISIBLE else View.VISIBLE
-            progressbar.visibility = if (it) View.VISIBLE else View.GONE
+            progressBar.visibility = if (it) View.VISIBLE else View.GONE
         })
-        vm.hasContent.observe(viewLifecycleOwner, Observer {
+        vm.hasContent.observe(viewLifecycleOwner, {
             pickerBottomSheetCallback.setNeedTransformation(it)
             if (it) remeasureContentDialog()
         })
-        vm.maxSelectionReached.observe(viewLifecycleOwner, Observer {
+        vm.maxSelectionReached.observe(viewLifecycleOwner, {
             val max = getMaxSelection(requireArguments())
             Toast.makeText(
                 requireContext(),
@@ -181,16 +224,16 @@ class PhotoPickerFragment : DialogFragment() {
     }
 
     private fun remeasureContentDialog() {
-        coordinator.doOnLayout {
-            val heightLp = design_bottom_sheet.layoutParams
-            heightLp.height = coordinator.measuredHeight + requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId)
-            design_bottom_sheet.layoutParams = heightLp
+        coordinatorLayout.doOnLayout {
+            val heightLp = bottomSheetDialog.layoutParams
+            heightLp.height = coordinatorLayout.measuredHeight + requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId)
+            bottomSheetDialog.layoutParams = heightLp
         }
     }
 
     private fun handlePermission(hasPermission: Boolean) {
-        permission_text.visibility = if (hasPermission) View.GONE else View.VISIBLE
-        grant.visibility = if (hasPermission) View.GONE else View.VISIBLE
+        permissionTextView.visibility = if (hasPermission) View.GONE else View.VISIBLE
+        grantTextView.visibility = if (hasPermission) View.GONE else View.VISIBLE
 
         photos.visibility = if (hasPermission) View.VISIBLE else View.INVISIBLE
     }
@@ -203,7 +246,7 @@ class PhotoPickerFragment : DialogFragment() {
             val count = selected.count()
             if (snackBar == null) {
                 val view = LayoutInflater.from(contextWrapper).inflate(R.layout.view_snackbar, null)
-                snackBar = Snackbar.make(coordinator, "", Snackbar.LENGTH_INDEFINITE)
+                snackBar = Snackbar.make(coordinatorLayout, "", Snackbar.LENGTH_INDEFINITE)
                     .setBehavior(NonDismissibleBehavior())
                 (snackBar?.view as? ViewGroup)?.apply {
                     setPadding(0, 0, 0, 0)
@@ -222,32 +265,38 @@ class PhotoPickerFragment : DialogFragment() {
     private fun handlePhotos(photos: List<SelectableImage>) {
         vm.setInProgress(false)
         photoAdapter.submitList(photos.toMutableList())
-        empty_text.visibility =
+        emptyText.visibility =
             if (photos.isEmpty() && vm.hasPermission.value == true) View.VISIBLE
             else View.GONE
     }
 
     private fun loadPhotos() {
         vm.setInProgress(true)
-        GlobalScope.launch(Dispatchers.IO) {
-            val projection = arrayOf(
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-                MediaStore.Images.Media.DATA,
-                MediaStore.Images.Media.DATE_ADDED
-            )
+        lifecycleScope.launch(Dispatchers.IO) {
+            val projection = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                arrayOf(
+                    MediaStore.Images.Media._ID,
+                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+                    MediaStore.Images.Media.DATA,
+                    MediaStore.Images.Media.DATE_ADDED
+                )
+            } else {
+                arrayOf(
+                    MediaStore.Images.Media._ID,
+                    MediaStore.Images.Media.DATA,
+                    MediaStore.Images.Media.DATE_ADDED
+                )
+            }
 
             val images = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
-            requireContext()
-                .contentResolver
-                .query(
-                    images,
-                    projection,
-                    null,
-                    null,
-                    MediaStore.Images.Media.DATE_ADDED + " DESC"
-                ).let { vm.setPhotos(it)}
+            requireContext().contentResolver.query(
+                images,
+                projection,
+                null,
+                null,
+                MediaStore.Images.Media.DATE_ADDED + " DESC"
+            ).use { vm.setPhotos(it) }
         }
     }
 
@@ -277,8 +326,8 @@ class PhotoPickerFragment : DialogFragment() {
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
             if (!needTransformation) return
             val calculatedSpacing = calculateSpacing(slideOffset)
-            design_bottom_sheet.translationY = -calculatedSpacing
-            design_bottom_sheet.setPadding(0, calculatedSpacing.toInt(), 0, 0)
+            bottomSheetDialog.translationY = -calculatedSpacing
+            bottomSheetDialog.setPadding(0, calculatedSpacing.toInt(), 0, 0)
         }
 
         fun setMargin(margin: Int) {
@@ -319,39 +368,8 @@ class PhotoPickerFragment : DialogFragment() {
 
     private fun orientation() = requireContext().resources.configuration.orientation
 
-    private object Request {
-        const val MEDIA_ACCESS_PERMISSION = 1
-        const val ADD_PHOTO_CAMERA = 2
-        const val ADD_PHOTO_GALLERY = 3
-    }
-
     interface Callback {
-        fun onImagesPicked(photos: ArrayList<Uri>)
+        fun onImagesPicked(photos: List<Uri>)
     }
 
-    companion object {
-        private const val KEY_MULTIPLE = "KEY_MULTIPLE"
-        private const val KEY_ALLOW_CAMERA = "KEY_ALLOW_CAMERA"
-        private const val KEY_THEME = "KEY_THEME"
-        private const val KEY_MAX_SELECTION = "KEY_MAX_SELECTION"
-
-        fun newInstance(
-            multiple: Boolean = false,
-            allowCamera: Boolean = false,
-            maxSelection: Int = SELECTION_UNDEFINED,
-            @StyleRes theme: Int = R.style.ChiliPhotoPicker_Light
-        ) = PhotoPickerFragment().apply {
-            arguments = bundleOf(
-                KEY_MULTIPLE to multiple,
-                KEY_ALLOW_CAMERA to allowCamera,
-                KEY_MAX_SELECTION to maxSelection,
-                KEY_THEME to theme
-            )
-        }
-
-        private fun getTheme(args: Bundle) = args.getInt(KEY_THEME)
-        private fun getAllowCamera(args: Bundle) = args.getBoolean(KEY_ALLOW_CAMERA)
-        private fun getAllowMultiple(args: Bundle) = args.getBoolean(KEY_MULTIPLE)
-        private fun getMaxSelection(args: Bundle) = args.getInt(KEY_MAX_SELECTION)
-    }
 }

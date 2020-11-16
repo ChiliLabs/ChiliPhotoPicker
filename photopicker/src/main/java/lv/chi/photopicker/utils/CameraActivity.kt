@@ -15,15 +15,30 @@ import java.io.File
 
 internal class CameraActivity : AppCompatActivity() {
 
+    companion object {
+        fun createIntent(context: Context): Intent =
+            Intent(context, CameraActivity::class.java)
+    }
+
+    private object Request {
+        const val IMAGE_CAPTURE = 1
+        const val CAMERA_ACCESS_PERMISSION = 2
+    }
+
+    private object Key {
+        const val OUTPUT = "output"
+    }
+
     private lateinit var output: Uri
 
     private var permissionGranted: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= 23) {
-            permissionGranted = hasCameraPermission()
-        } else permissionGranted = true
+
+        permissionGranted = if (Build.VERSION.SDK_INT >= 23) {
+            hasCameraPermission()
+        } else true
 
         if (savedInstanceState == null) {
             output = provideImageUri()
@@ -90,21 +105,10 @@ internal class CameraActivity : AppCompatActivity() {
             Request.IMAGE_CAPTURE
         )
 
-    private fun hasCameraPermission() = ContextCompat.checkSelfPermission(
-        this,
-        Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
+    private fun hasCameraPermission() =
+        ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
 
-    private object Request {
-        const val IMAGE_CAPTURE = 1
-        const val CAMERA_ACCESS_PERMISSION = 2
-    }
-
-    private object Key {
-        const val OUTPUT = "output"
-    }
-
-    companion object {
-        fun createIntent(context: Context) = Intent(context, CameraActivity::class.java)
-    }
 }

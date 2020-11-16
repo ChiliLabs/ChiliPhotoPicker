@@ -14,7 +14,7 @@ internal class ImagePickerAdapter(
     private val onImageClick: (SelectableImage) -> Unit,
     private val multiple: Boolean,
     private val imageLoader: ImageLoader
-) : ListAdapter<SelectableImage, ImagePickerAdapter.ImagePickerViewHolder>(DiffCallback) {
+) : ListAdapter<SelectableImage, ImagePickerAdapter.ImagePickerViewHolder>(diffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, type: Int) =
         ImagePickerViewHolder(
@@ -48,7 +48,7 @@ internal class ImagePickerAdapter(
     companion object {
         private const val SELECTED_PAYLOAD = "selected_payload"
 
-        private val DiffCallback = object : DiffUtil.ItemCallback<SelectableImage>() {
+        private val diffCallback = object : DiffUtil.ItemCallback<SelectableImage>() {
             override fun areItemsTheSame(
                 oldItem: SelectableImage,
                 newItem: SelectableImage

@@ -22,4 +22,5 @@
         <item name="pickerGalleryIcon">@drawable/ic_picker_gallery</item>
         <item name="pickerDividerColor">@color/divider_dark</item>
     </style>
+
 </resources>

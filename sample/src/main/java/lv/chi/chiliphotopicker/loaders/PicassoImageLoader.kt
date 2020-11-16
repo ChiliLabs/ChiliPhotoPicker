@@ -10,7 +10,7 @@ import lv.chi.photopicker.loader.ImageLoader
 class PicassoImageLoader: ImageLoader {
 
     override fun loadImage(context: Context, view: ImageView, uri: Uri) {
-        Picasso.with(context)
+        Picasso.get()
             .load(uri)
             .placeholder(R.drawable.bg_placeholder)
             .fit()

@@ -7,4 +7,5 @@
         <item name="android:includeFontPadding">true</item>
         <item name="android:textSize">@dimen/textSizeMedium</item>
     </style>
+
 </resources>

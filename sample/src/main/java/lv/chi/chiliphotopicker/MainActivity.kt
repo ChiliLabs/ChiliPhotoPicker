@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity(), PhotoPickerFragment.Callback {
         picked_url.movementMethod = ScrollingMovementMethod()
     }
 
-    override fun onImagesPicked(photos: ArrayList<Uri>) {
+    override fun onImagesPicked(photos: List<Uri>) {
         picked_url.text = photos.joinToString(separator = "\n") { it.toString() }
     }
 

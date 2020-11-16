@@ -1,7 +1,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinator"
+    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/transparent"
@@ -9,7 +9,7 @@
     tools:theme="@style/ChiliPhotoPicker.Dark">
 
     <FrameLayout
-        android:id="@+id/design_bottom_sheet"
+        android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|top"
@@ -41,6 +41,7 @@
                     android:gravity="center"
                     android:text="@string/picker_gallery"
                     android:textAppearance="@style/TextAppearance.PhotoPicker.Button" />
+
             </FrameLayout>
 
             <FrameLayout
@@ -62,6 +63,7 @@
                     android:gravity="center"
                     android:text="@string/picker_camera"
                     android:textAppearance="@style/TextAppearance.PhotoPicker.Button" />
+
             </FrameLayout>
 
             <View
@@ -112,13 +114,16 @@
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
             <ProgressBar
-                android:id="@+id/progressbar"
+                android:id="@+id/progress_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="64dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
+
     </FrameLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

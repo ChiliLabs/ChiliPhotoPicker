@@ -3,21 +3,21 @@ package lv.chi.photopicker
 import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import lv.chi.photopicker.adapter.SelectableImage
 import lv.chi.photopicker.utils.SingleLiveEvent
 
 internal class PickerViewModel : ViewModel() {
 
-    private val hasContentData = MutableLiveData<Boolean>(false)
-    private val inProgressData = MutableLiveData<Boolean>(false)
-    private val hasPermissionData = MutableLiveData<Boolean>(false)
+    companion object {
+        const val SELECTION_UNDEFINED = -1
+    }
+
+    private val hasContentData = MutableLiveData(false)
+    private val inProgressData = MutableLiveData(false)
+    private val hasPermissionData = MutableLiveData(false)
     private val selectedData = MutableLiveData<ArrayList<Uri>>(arrayListOf())
     private val photosData = MutableLiveData<ArrayList<SelectableImage>>(arrayListOf())
     private val maxSelectionReachedData = SingleLiveEvent<Unit>()
@@ -38,7 +38,7 @@ internal class PickerViewModel : ViewModel() {
     }
 
     fun clearSelected() {
-        GlobalScope.launch {
+        viewModelScope.launch {
             val photos = requireNotNull(photosData.value).map { it.copy(selected = false) }
             val array = arrayListOf<SelectableImage>()
             array.addAll(photos)
@@ -65,7 +65,7 @@ internal class PickerViewModel : ViewModel() {
     }
 
     fun toggleSelected(photo: SelectableImage) {
-        GlobalScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             val selected = requireNotNull(selectedData.value)
 
             when {
@@ -95,7 +95,4 @@ internal class PickerViewModel : ViewModel() {
         return SelectableImage(id, Uri.parse(uri), false)
     }
 
-    companion object {
-        const val SELECTION_UNDEFINED = -1
-    }
 }
