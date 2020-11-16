@@ -6,13 +6,13 @@
 
     <color name="divider_light">#1000</color>
     <color name="background_light">@color/white</color>
-    <color name="controls_light">#5F9BB2</color>
+    <color name="controls_light">#007AFF</color>
     <color name="text_primary_light">#8A8A8A</color>
     <color name="text_secondary_light">@color/black</color>
 
     <color name="divider_dark">#1FFF</color>
     <color name="background_dark">#151816</color>
-    <color name="controls_dark">#85C4DD</color>
+    <color name="controls_dark">#007DFF</color>
     <color name="text_primary_dark">#9A9A9A</color>
     <color name="text_secondary_dark">#E1E1E1</color>
 </resources>

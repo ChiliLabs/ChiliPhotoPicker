@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -83,8 +84,8 @@ class MediaPickerFragment : DialogFragment() {
 
     private lateinit var coordinatorLayout: CoordinatorLayout
     private lateinit var bottomSheetDialog: FrameLayout
-    private lateinit var galleryContainer: FrameLayout
-    private lateinit var cameraContainer: FrameLayout
+    private lateinit var galleryButton: MaterialButton
+    private lateinit var cameraButton: MaterialButton
     private lateinit var emptyText: TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var permissionTextView: TextView
@@ -120,6 +121,7 @@ class MediaPickerFragment : DialogFragment() {
         pickerMode = getPickerMode(requireArguments())
 
         mediaPickerAdapter = MediaPickerAdapter(
+            lifecycleScope = lifecycleScope,
             onMediaClick = ::onMediaClicked,
             multiple = getAllowMultiple(requireArguments()),
             imageLoader = PickerConfiguration.getImageLoader()
@@ -144,8 +146,8 @@ class MediaPickerFragment : DialogFragment() {
 
             coordinatorLayout = findViewById(R.id.coordinator_layout)
             bottomSheetDialog = findViewById(R.id.bottom_sheet)
-            galleryContainer = findViewById(R.id.gallery_container)
-            cameraContainer = findViewById(R.id.camera_container)
+            galleryButton = findViewById(R.id.gallery_button)
+            cameraButton = findViewById(R.id.camera_button)
             emptyText = findViewById(R.id.empty_text)
             recyclerView = findViewById(R.id.recycler_view)
             permissionTextView = findViewById(R.id.permission_text_view)
@@ -164,15 +166,15 @@ class MediaPickerFragment : DialogFragment() {
                 )
             }
 
-            cameraContainer.isVisible = getAllowCamera(requireArguments())
-            galleryContainer.setOnClickListener {
+            cameraButton.isVisible = getAllowCamera(requireArguments())
+            galleryButton.setOnClickListener {
                 when (pickerMode) {
                     PickerMode.IMAGE -> pickImageGallery()
                     PickerMode.VIDEO -> pickVideoGallery()
                     PickerMode.ANY -> pickImageAndVideoGallery()
                 }
             }
-            cameraContainer.setOnClickListener { pickImageCamera() }
+            cameraButton.setOnClickListener { pickImageCamera() }
             grantTextView.setOnClickListener { grantPermissions() }
 
             pickerBottomSheetCallback.setMargin(requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId))
@@ -274,15 +276,15 @@ class MediaPickerFragment : DialogFragment() {
                 snackBar = Snackbar.make(coordinatorLayout, "", Snackbar.LENGTH_INDEFINITE)
                     .setBehavior(NonDismissibleBehavior())
                 (snackBar?.view as? ViewGroup)?.apply {
-                    setPadding(0, 0, 0, 0)
+                    setPadding(0, 10, 0, 10)
                     removeAllViews()
                     addView(view)
-                    findViewById<ImageView>(R.id.cancel).setOnClickListener { viewModel.clearSelected() }
-                    findViewById<TextView>(R.id.select).setOnClickListener { uploadSelected() }
+                    findViewById<MaterialButton>(R.id.cancelButton).setOnClickListener { viewModel.clearSelected() }
+                    findViewById<MaterialButton>(R.id.selectButton).setOnClickListener { uploadSelected() }
                 }
                 snackBar?.show()
             }
-            snackBar?.view?.findViewById<TextView>(R.id.count)?.text =
+            snackBar?.view?.findViewById<TextView>(R.id.countView)?.text =
                 resources.getQuantityString(R.plurals.picker_selected_count, count, count)
         }
     }

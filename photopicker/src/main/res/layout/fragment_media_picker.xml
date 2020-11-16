@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -22,49 +23,31 @@
             android:layout_height="match_parent"
             android:minHeight="256dp">
 
-            <FrameLayout
-                android:id="@+id/gallery_container"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/gallery_button"
+                style="@style/TextButton"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
-                android:background="?selectableItemBackground"
-                app:layout_constraintEnd_toStartOf="@id/camera_container"
+                android:gravity="center"
+                android:text="@string/picker_gallery"
+                app:icon="?pickerGalleryIcon"
+                app:layout_constraintEnd_toStartOf="@id/camera_button"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearance="@style/ShapeAppearance.TopLeftRounded" />
 
-                <TextView
-                    android:id="@+id/gallery"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:drawableStart="?pickerGalleryIcon"
-                    android:drawablePadding="14dp"
-                    android:gravity="center"
-                    android:text="@string/picker_gallery"
-                    android:textAppearance="@style/TextAppearance.MediaPicker.Button" />
-
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/camera_container"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/camera_button"
+                style="@style/TextButton"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
-                android:background="?selectableItemBackground"
+                android:gravity="center"
+                android:text="@string/picker_camera"
+                app:icon="?pickerCameraIcon"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/gallery_container"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <TextView
-                    android:id="@+id/camera"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:drawableStart="?pickerCameraIcon"
-                    android:drawablePadding="14dp"
-                    android:gravity="center"
-                    android:text="@string/picker_camera"
-                    android:textAppearance="@style/TextAppearance.MediaPicker.Button" />
-
-            </FrameLayout>
+                app:layout_constraintStart_toEndOf="@id/gallery_button"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearance="@style/ShapeAppearance.TopRightRounded" />
 
             <View
                 android:id="@+id/barrier"
@@ -73,7 +56,7 @@
                 android:background="?pickerDividerColor"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/gallery_container" />
+                app:layout_constraintTop_toBottomOf="@+id/gallery_button" />
 
             <TextView
                 android:id="@+id/empty_text"
