@@ -7,13 +7,15 @@
     <string name="picker_empty_media">Your media library is empty</string>
     <string name="picker_allow">Allow</string>
     <string name="picker_select_photo">Select photo</string>
+    <string name="picker_select_video">Select video</string>
+    <string name="picker_select_media">Select media</string>
     <string name="picker_no_camera">No camera app is installed</string>
     <plurals name="picker_selected_count">
-        <item quantity="one">%d photo selected</item>
-        <item quantity="other">%d photos selected</item>
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
     </plurals>
     <plurals name="picker_max_selection_reached">
-        <item quantity="one">You can pick only %d image</item>
-        <item quantity="other">You can pick only %d images</item>
+        <item quantity="one">You can pick only %d</item>
+        <item quantity="other">You can pick only %d</item>
     </plurals>
 </resources>

@@ -5,7 +5,7 @@
     android:layout_height="wrap_content">
 
     <ImageView
-        android:id="@+id/photo_item"
+        android:id="@+id/image_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:foreground="@drawable/bg_ripple_image"
@@ -17,7 +17,7 @@
         tools:ignore="UnusedAttribute" />
 
     <CheckBox
-        android:id="@+id/checkbox"
+        android:id="@+id/check_box"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:background="@null"

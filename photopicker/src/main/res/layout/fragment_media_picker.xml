@@ -1,12 +1,12 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinatorLayout"
+    android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/transparent"
     android:fitsSystemWindows="false"
-    tools:theme="@style/ChiliPhotoPicker.Dark">
+    tools:theme="@style/MediaPicker.Dark">
 
     <FrameLayout
         android:id="@+id/bottom_sheet"
@@ -40,7 +40,7 @@
                     android:drawablePadding="14dp"
                     android:gravity="center"
                     android:text="@string/picker_gallery"
-                    android:textAppearance="@style/TextAppearance.PhotoPicker.Button" />
+                    android:textAppearance="@style/TextAppearance.MediaPicker.Button" />
 
             </FrameLayout>
 
@@ -62,7 +62,7 @@
                     android:drawablePadding="14dp"
                     android:gravity="center"
                     android:text="@string/picker_camera"
-                    android:textAppearance="@style/TextAppearance.PhotoPicker.Button" />
+                    android:textAppearance="@style/TextAppearance.MediaPicker.Button" />
 
             </FrameLayout>
 
@@ -91,7 +91,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/photos"
+                android:id="@+id/recycler_view"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:clipToPadding="false"

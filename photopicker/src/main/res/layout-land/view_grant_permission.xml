@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:background="?selectableItemBackgroundBorderless"
         android:text="@string/picker_allow"
-        android:textAppearance="@style/TextAppearance.PhotoPicker.Button"
+        android:textAppearance="@style/TextAppearance.MediaPicker.Button"
         app:layout_constraintBottom_toBottomOf="@+id/permission_text_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/permission_text_view"

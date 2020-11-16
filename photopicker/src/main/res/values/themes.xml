@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="ChiliPhotoPicker.Light" parent="Theme.MaterialComponents.NoActionBar.Bridge">
+    <style name="MediaPicker.Light" parent="Theme.MaterialComponents.NoActionBar.Bridge">
         <item name="pickerBackgroundColor">@color/background_light</item>
         <item name="pickerPrimaryColor">@color/text_primary_light</item>
         <item name="pickerSecondaryColor">@color/text_secondary_light</item>
@@ -12,7 +12,7 @@
         <item name="pickerDividerColor">@color/divider_light</item>
     </style>
 
-    <style name="ChiliPhotoPicker.Dark" parent="Theme.MaterialComponents.NoActionBar.Bridge">
+    <style name="MediaPicker.Dark" parent="Theme.MaterialComponents.NoActionBar.Bridge">
         <item name="pickerBackgroundColor">@color/background_dark</item>
         <item name="pickerPrimaryColor">@color/text_primary_dark</item>
         <item name="pickerSecondaryColor">@color/text_secondary_dark</item>

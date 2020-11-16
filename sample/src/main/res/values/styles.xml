@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="SamplePhotoPicker" parent="ChiliPhotoPicker.Light">
+    <style name="SampleMediaPicker" parent="MediaPicker.Light">
         <item name="pickerCornerRadius">@dimen/samplePickerCornerRadius</item>
         <item name="pickerBackgroundColor">#EAFBEA</item>
         <item name="pickerControlColor">#6F9A8D</item>
     </style>
+
 </resources>

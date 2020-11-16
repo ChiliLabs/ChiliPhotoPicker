@@ -27,7 +27,7 @@
         android:layout_marginBottom="32dp"
         android:background="?selectableItemBackgroundBorderless"
         android:text="@string/picker_allow"
-        android:textAppearance="@style/TextAppearance.PhotoPicker.Button"
+        android:textAppearance="@style/TextAppearance.MediaPicker.Button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/permission_text_view" />

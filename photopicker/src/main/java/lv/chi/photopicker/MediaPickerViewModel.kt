@@ -6,10 +6,10 @@ import android.provider.MediaStore
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import lv.chi.photopicker.adapter.SelectableImage
+import lv.chi.photopicker.adapter.SelectableMedia
 import lv.chi.photopicker.utils.SingleLiveEvent
 
-internal class PickerViewModel : ViewModel() {
+internal class MediaPickerViewModel : ViewModel() {
 
     companion object {
         const val SELECTION_UNDEFINED = -1
@@ -19,7 +19,7 @@ internal class PickerViewModel : ViewModel() {
     private val inProgressData = MutableLiveData(false)
     private val hasPermissionData = MutableLiveData(false)
     private val selectedData = MutableLiveData<ArrayList<Uri>>(arrayListOf())
-    private val photosData = MutableLiveData<ArrayList<SelectableImage>>(arrayListOf())
+    private val mediaData = MutableLiveData<ArrayList<SelectableMedia>>(arrayListOf())
     private val maxSelectionReachedData = SingleLiveEvent<Unit>()
 
     private var maxSelectionCount = SELECTION_UNDEFINED
@@ -28,7 +28,7 @@ internal class PickerViewModel : ViewModel() {
     val inProgress: LiveData<Boolean> = inProgressData
     val hasPermission: LiveData<Boolean> = hasPermissionData
     val selected: LiveData<ArrayList<Uri>> = selectedData
-    val photos: LiveData<ArrayList<SelectableImage>> = photosData
+    val media: LiveData<ArrayList<SelectableMedia>> = mediaData
     val maxSelectionReached: LiveData<Unit> = maxSelectionReachedData
 
     fun setHasPermission(hasPermission: Boolean) = hasPermissionData.postValue(hasPermission)
@@ -39,24 +39,24 @@ internal class PickerViewModel : ViewModel() {
 
     fun clearSelected() {
         viewModelScope.launch {
-            val photos = requireNotNull(photosData.value).map { it.copy(selected = false) }
-            val array = arrayListOf<SelectableImage>()
-            array.addAll(photos)
-            photosData.postValue(array)
+            val media = requireNotNull(mediaData.value).map { it.copy(selected = false) }
+            val array = arrayListOf<SelectableMedia>()
+            array.addAll(media)
+            mediaData.postValue(array)
             selectedData.postValue(arrayListOf())
         }
     }
 
-    fun setPhotos(cursor: Cursor?) {
+    fun setMedia(cursor: Cursor?) {
         cursor?.let { c ->
-            val array = arrayListOf<SelectableImage>()
+            val array = arrayListOf<SelectableMedia>()
             array.addAll(
                 generateSequence { if (c.moveToNext()) c else null }
                     .map { readValueAtCursor(cursor) }
                     .toList()
             )
             hasContentData.postValue(array.isNotEmpty())
-            photosData.postValue(array)
+            mediaData.postValue(array)
         }
     }
 
@@ -64,35 +64,35 @@ internal class PickerViewModel : ViewModel() {
         inProgressData.postValue(progress)
     }
 
-    fun toggleSelected(photo: SelectableImage) {
+    fun toggleSelected(selectableMedia: SelectableMedia) {
         viewModelScope.launch(Dispatchers.IO) {
             val selected = requireNotNull(selectedData.value)
 
             when {
-                photo.selected -> selected.remove(photo.uri)
-                canSelectMore(selected.size) -> selected.add(photo.uri)
+                selectableMedia.selected -> selected.remove(selectableMedia.uri)
+                canSelectMore(selected.size) -> selected.add(selectableMedia.uri)
                 else -> {
                     maxSelectionReachedData.postValue(Unit)
                     return@launch
                 }
             }
 
-            val photos = requireNotNull(photosData.value)
-            photos.indexOfFirst { item -> item.id == photo.id }
-                .takeIf { pos -> pos != -1 }
-                ?.let { pos -> photos[pos] = photo.copy(selected = !photo.selected) }
+            val media = requireNotNull(mediaData.value)
+            media.indexOfFirst { item -> item.id == selectableMedia.id }
+                .takeIf { position -> position != -1 }
+                ?.let { position -> media[position] = selectableMedia.copy(selected = !selectableMedia.selected) }
 
             selectedData.postValue(selected)
-            photosData.postValue(photos)
+            mediaData.postValue(media)
         }
     }
 
     private fun canSelectMore(size: Int) = maxSelectionCount == SELECTION_UNDEFINED || maxSelectionCount > size
 
-    private fun readValueAtCursor(cursor: Cursor): SelectableImage {
+    private fun readValueAtCursor(cursor: Cursor): SelectableMedia {
         val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
         val uri = "file://${cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))}"
-        return SelectableImage(id, Uri.parse(uri), false)
+        return SelectableMedia(id, Uri.parse(uri), false)
     }
 
 }
