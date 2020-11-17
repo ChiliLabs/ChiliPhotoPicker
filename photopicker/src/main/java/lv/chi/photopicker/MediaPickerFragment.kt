@@ -12,7 +12,9 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.FrameLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.StyleRes
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -31,9 +33,6 @@ import lv.chi.photopicker.MediaPickerViewModel.Companion.SELECTION_UNDEFINED
 import lv.chi.photopicker.adapter.MediaPickerAdapter
 import lv.chi.photopicker.adapter.SelectableMedia
 import lv.chi.photopicker.ext.*
-import lv.chi.photopicker.ext.Intents
-import lv.chi.photopicker.ext.isPermissionGranted
-import lv.chi.photopicker.ext.parentAs
 import lv.chi.photopicker.utils.CameraActivity
 import lv.chi.photopicker.utils.NonDismissibleBehavior
 import lv.chi.photopicker.utils.SpacingItemDecoration
@@ -41,6 +40,8 @@ import lv.chi.photopicker.utils.SpacingItemDecoration
 class MediaPickerFragment : DialogFragment() {
 
     companion object {
+        private val TAG = MediaPickerFragment::class.java.simpleName
+
         private const val KEY_MULTIPLE = "KEY_MULTIPLE"
         private const val KEY_ALLOW_CAMERA = "KEY_ALLOW_CAMERA"
         private const val KEY_THEME = "KEY_THEME"
@@ -83,14 +84,14 @@ class MediaPickerFragment : DialogFragment() {
     }
 
     private lateinit var coordinatorLayout: CoordinatorLayout
-    private lateinit var bottomSheetDialog: FrameLayout
+    private lateinit var bottomSheet: FrameLayout
     private lateinit var galleryButton: MaterialButton
     private lateinit var cameraButton: MaterialButton
-    private lateinit var emptyText: TextView
+    private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var permissionTextView: TextView
     private lateinit var grantTextView: TextView
-    private lateinit var progressBar: ProgressBar
+    private lateinit var progressBar: FrameLayout
 
     private lateinit var mediaPickerAdapter: MediaPickerAdapter
 
@@ -98,6 +99,7 @@ class MediaPickerFragment : DialogFragment() {
 
     private var behavior: BottomSheetBehavior<FrameLayout>? = null
 
+    private var toast: Toast? = null
     private var snackBar: Snackbar? = null
 
     private val cornerRadiusOutValue = TypedValue()
@@ -144,26 +146,29 @@ class MediaPickerFragment : DialogFragment() {
         ).apply {
             contextWrapper.theme.resolveAttribute(R.attr.pickerCornerRadius, cornerRadiusOutValue, true)
 
-            coordinatorLayout = findViewById(R.id.coordinator_layout)
-            bottomSheetDialog = findViewById(R.id.bottom_sheet)
-            galleryButton = findViewById(R.id.gallery_button)
-            cameraButton = findViewById(R.id.camera_button)
-            emptyText = findViewById(R.id.empty_text)
-            recyclerView = findViewById(R.id.recycler_view)
-            permissionTextView = findViewById(R.id.permission_text_view)
-            grantTextView = findViewById(R.id.grant_text_view)
-            progressBar = findViewById(R.id.progress_bar)
+            coordinatorLayout = findViewById(R.id.coordinatorLayout)
+            bottomSheet = findViewById(R.id.bottomSheet)
+            galleryButton = findViewById(R.id.galleryButton)
+            cameraButton = findViewById(R.id.cameraButton)
+            emptyTextView = findViewById(R.id.emptyTextView)
+            recyclerView = findViewById(R.id.recyclerView)
+            permissionTextView = findViewById(R.id.permissionTextView)
+            grantTextView = findViewById(R.id.grantTextView)
+            progressBar = findViewById(R.id.progressBar)
 
-            recyclerView.apply {
+            recyclerView.run {
+                setHasFixedSize(true)
                 adapter = mediaPickerAdapter
                 val margin = context.resources.getDimensionPixelSize(R.dimen.margin_2dp)
                 addItemDecoration(SpacingItemDecoration(margin, margin, margin, margin))
-                layoutManager = GridLayoutManager(
+                val layoutManager = GridLayoutManager(
                     requireContext(),
                     if (orientation() == Configuration.ORIENTATION_LANDSCAPE) 5 else 3,
                     RecyclerView.VERTICAL,
                     false
                 )
+                layoutManager.isItemPrefetchEnabled = true
+                this@run.layoutManager = layoutManager
             }
 
             cameraButton.isVisible = getAllowCamera(requireArguments())
@@ -184,7 +189,7 @@ class MediaPickerFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         coordinatorLayout.doOnLayout {
-            behavior = BottomSheetBehavior.from(bottomSheetDialog).apply {
+            behavior = BottomSheetBehavior.from(bottomSheet).apply {
                 addBottomSheetCallback(pickerBottomSheetCallback)
                 isHideable = true
                 skipCollapsed = false
@@ -196,24 +201,26 @@ class MediaPickerFragment : DialogFragment() {
 
         if (savedInstanceState == null) updateState()
 
-        viewModel.hasPermission.observe(viewLifecycleOwner, { handlePermission(it) })
-        viewModel.selected.observe(viewLifecycleOwner, { handleSelected(it) })
-        viewModel.media.observe(viewLifecycleOwner, { handleMedia(it) })
-        viewModel.inProgress.observe(viewLifecycleOwner, {
+        viewModel.getHasPermission().observe(viewLifecycleOwner, { handlePermission(it) })
+        viewModel.getSelected().observe(viewLifecycleOwner, { handleSelected(it) })
+        viewModel.getMedia().observe(viewLifecycleOwner, { handleMedia(it) })
+        viewModel.getInProgress().observe(viewLifecycleOwner, {
             recyclerView.visibility = if (it) View.INVISIBLE else View.VISIBLE
             progressBar.visibility = if (it) View.VISIBLE else View.GONE
         })
-        viewModel.hasContent.observe(viewLifecycleOwner, {
+        viewModel.getHasContent().observe(viewLifecycleOwner, {
             pickerBottomSheetCallback.setNeedTransformation(it)
             if (it) remeasureContentDialog()
         })
-        viewModel.maxSelectionReached.observe(viewLifecycleOwner, {
+        viewModel.getMaxSelectionReached().observe(viewLifecycleOwner, {
             val max = getMaxSelection(requireArguments())
-            Toast.makeText(
+            toast?.cancel()
+            toast = Toast.makeText(
                 requireContext(),
                 resources.getQuantityString((R.plurals.picker_max_selection_reached), max, max),
                 Toast.LENGTH_SHORT
-            ).show()
+            )
+            toast?.show()
         })
     }
 
@@ -241,20 +248,20 @@ class MediaPickerFragment : DialogFragment() {
         }
     }
 
-    private fun onMediaClicked(state: SelectableMedia) {
+    private fun onMediaClicked(selectableMedia: SelectableMedia) {
         if (getAllowMultiple(requireArguments())) {
-            viewModel.toggleSelected(state)
+            viewModel.toggleSelected(selectableMedia)
         } else {
-            parentAs<Callback>()?.onMediaPicked(arrayListOf(state.uri))
+            parentAs<Callback>()?.onMediaPicked(arrayListOf(selectableMedia.uri))
             dismiss()
         }
     }
 
     private fun remeasureContentDialog() {
         coordinatorLayout.doOnLayout {
-            val heightLp = bottomSheetDialog.layoutParams
+            val heightLp = bottomSheet.layoutParams
             heightLp.height = coordinatorLayout.measuredHeight + requireContext().resources.getDimensionPixelSize(cornerRadiusOutValue.resourceId)
-            bottomSheetDialog.layoutParams = heightLp
+            bottomSheet.layoutParams = heightLp
         }
     }
 
@@ -272,7 +279,8 @@ class MediaPickerFragment : DialogFragment() {
         } else {
             val count = selected.count()
             if (snackBar == null) {
-                val view = LayoutInflater.from(contextWrapper).inflate(R.layout.view_snackbar, null)
+                val view = LayoutInflater.from(contextWrapper)
+                        .inflate(R.layout.view_snackbar, null)
                 snackBar = Snackbar.make(coordinatorLayout, "", Snackbar.LENGTH_INDEFINITE)
                     .setBehavior(NonDismissibleBehavior())
                 (snackBar?.view as? ViewGroup)?.apply {
@@ -292,64 +300,34 @@ class MediaPickerFragment : DialogFragment() {
     private fun handleMedia(media: List<SelectableMedia>) {
         viewModel.setInProgress(false)
         mediaPickerAdapter.submitList(media.toMutableList())
-        emptyText.visibility =
-            if (media.isEmpty() && viewModel.hasPermission.value == true) View.VISIBLE
-            else View.GONE
+        emptyTextView.visibility =
+                if (media.isEmpty() && viewModel.getHasPermission().value == true) View.VISIBLE
+                else View.GONE
     }
 
     private fun loadImages() {
         viewModel.setInProgress(true)
         lifecycleScope.launch(Dispatchers.IO + exceptionHandler) {
-            val projection = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                arrayOf(
-                    MediaStore.Images.Media._ID,
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-                    MediaStore.Images.Media.DATA,
-                    MediaStore.Images.Media.DATE_ADDED
-                )
-            } else {
-                arrayOf(
-                    MediaStore.Images.Media._ID,
-                    MediaStore.Images.Media.DATA,
-                    MediaStore.Images.Media.DATE_ADDED
-                )
-            }
-
             val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
             requireContext().contentResolver.query(
                 uri,
-                projection,
+                getProjection(),
                 null,
                 null,
                 MediaStore.Images.Media.DATE_ADDED + " DESC"
-            ).use { viewModel.setMedia(it) }
+            )?.use { viewModel.setMedia(it) }
         }
     }
 
     private fun loadVideos() {
         viewModel.setInProgress(true)
         lifecycleScope.launch(Dispatchers.IO + exceptionHandler) {
-            val projection = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                arrayOf(
-                    MediaStore.Video.Media._ID,
-                    MediaStore.Video.Media.BUCKET_DISPLAY_NAME,
-                    MediaStore.Video.Media.DATA,
-                    MediaStore.Video.Media.DATE_ADDED
-                )
-            } else {
-                arrayOf(
-                    MediaStore.Video.Media._ID,
-                    MediaStore.Video.Media.DATA,
-                    MediaStore.Video.Media.DATE_ADDED
-                )
-            }
-
             val uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
 
             requireContext().contentResolver.query(
                 uri,
-                projection,
+                getProjection(),
                 null,
                 null,
                 MediaStore.Video.Media.DATE_ADDED + " DESC"
@@ -360,21 +338,6 @@ class MediaPickerFragment : DialogFragment() {
     private fun loadImagesAndVideos() {
         viewModel.setInProgress(true)
         lifecycleScope.launch(Dispatchers.IO + exceptionHandler) {
-            val projection = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                arrayOf(
-                    MediaStore.Files.FileColumns._ID,
-                    MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME,
-                    MediaStore.Files.FileColumns.DATA,
-                    MediaStore.Files.FileColumns.DATE_ADDED
-                )
-            } else {
-                arrayOf(
-                    MediaStore.Files.FileColumns._ID,
-                    MediaStore.Files.FileColumns.DATA,
-                    MediaStore.Files.FileColumns.DATE_ADDED
-                )
-            }
-
             val uri = MediaStore.Files.getContentUri("external")
 
             val selection = (MediaStore.Files.FileColumns.MEDIA_TYPE + "="
@@ -385,7 +348,7 @@ class MediaPickerFragment : DialogFragment() {
 
             requireContext().contentResolver.query(
                 uri,
-                projection,
+                getProjection(),
                 selection,
                 null,
                 MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
@@ -425,11 +388,12 @@ class MediaPickerFragment : DialogFragment() {
                 dismiss()
             }
         }
+
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
             if (!needTransformation) return
             val calculatedSpacing = calculateSpacing(slideOffset)
-            bottomSheetDialog.translationY = -calculatedSpacing
-            bottomSheetDialog.setPadding(0, calculatedSpacing.toInt(), 0, 0)
+            this@MediaPickerFragment.bottomSheet.translationY = -calculatedSpacing
+            this@MediaPickerFragment.bottomSheet.setPadding(0, calculatedSpacing.toInt(), 0, 0)
         }
 
         fun setMargin(margin: Int) {
@@ -500,13 +464,52 @@ class MediaPickerFragment : DialogFragment() {
     }
 
     private fun uploadSelected() {
-        val selected = ArrayList(viewModel.selected.value ?: emptyList())
+        val selected = ArrayList(viewModel.getSelected().value ?: emptyList())
 
         parentAs<Callback>()?.onMediaPicked(selected)
         dismiss()
     }
 
     private fun orientation() = requireContext().resources.configuration.orientation
+
+    private fun getProjection(): Array<String> {
+        val projection = when (pickerMode) {
+            PickerMode.IMAGE -> mutableListOf(
+                MediaStore.Images.ImageColumns._ID,
+                MediaStore.Images.ImageColumns.DATA,
+                MediaStore.Images.ImageColumns.DATE_ADDED,
+                MediaStore.Images.ImageColumns.MIME_TYPE
+            )
+            PickerMode.VIDEO -> mutableListOf(
+                MediaStore.Video.VideoColumns._ID,
+                MediaStore.Video.VideoColumns.DATA,
+                MediaStore.Video.VideoColumns.DATE_ADDED,
+                MediaStore.Video.VideoColumns.MIME_TYPE
+            )
+            PickerMode.ANY -> mutableListOf(
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.DATA,
+                MediaStore.Files.FileColumns.DATE_ADDED,
+                MediaStore.Files.FileColumns.MIME_TYPE
+            )
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            when (pickerMode) {
+                PickerMode.IMAGE -> {
+                    projection.add(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME)
+                }
+                PickerMode.VIDEO -> {
+                    projection.add(MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME)
+                    projection.add(MediaStore.Video.VideoColumns.DURATION)
+                }
+                PickerMode.ANY -> {
+                    projection.add(MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME)
+                    projection.add(MediaStore.Files.FileColumns.DURATION)
+                }
+            }
+        }
+        return projection.toTypedArray()
+    }
 
     interface Callback {
         fun onMediaPicked(media: List<Uri>)

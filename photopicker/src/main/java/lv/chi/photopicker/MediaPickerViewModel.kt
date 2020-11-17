@@ -1,44 +1,53 @@
 package lv.chi.photopicker
 
 import android.database.Cursor
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.lifecycle.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import lv.chi.photopicker.adapter.SelectableMedia
 import lv.chi.photopicker.utils.SingleLiveEvent
+import kotlin.collections.ArrayList
 
 internal class MediaPickerViewModel : ViewModel() {
 
     companion object {
+        private val TAG = MediaPickerViewModel::class.java.simpleName
+
         const val SELECTION_UNDEFINED = -1
     }
 
+    private val exceptionHandler = CoroutineExceptionHandler { _, error ->
+        error.printStackTrace()
+    }
+
     private val hasContentData = MutableLiveData(false)
-    private val inProgressData = MutableLiveData(false)
+    private val inProgressData = MutableLiveData(true)
     private val hasPermissionData = MutableLiveData(false)
     private val selectedData = MutableLiveData<ArrayList<Uri>>(arrayListOf())
-    private val mediaData = MutableLiveData<ArrayList<SelectableMedia>>(arrayListOf())
+    private val mediaData = MutableLiveData<ArrayList<SelectableMedia>>()
     private val maxSelectionReachedData = SingleLiveEvent<Unit>()
 
     private var maxSelectionCount = SELECTION_UNDEFINED
 
-    val hasContent: LiveData<Boolean> = Transformations.distinctUntilChanged(hasContentData)
-    val inProgress: LiveData<Boolean> = inProgressData
-    val hasPermission: LiveData<Boolean> = hasPermissionData
-    val selected: LiveData<ArrayList<Uri>> = selectedData
-    val media: LiveData<ArrayList<SelectableMedia>> = mediaData
-    val maxSelectionReached: LiveData<Unit> = maxSelectionReachedData
+    fun getHasContent(): LiveData<Boolean> = Transformations.distinctUntilChanged(hasContentData)
+    fun getInProgress(): LiveData<Boolean> = inProgressData
+    fun getHasPermission(): LiveData<Boolean> = hasPermissionData
+    fun getSelected(): LiveData<ArrayList<Uri>> = selectedData
+    fun getMedia(): LiveData<ArrayList<SelectableMedia>> = mediaData
+    fun getMaxSelectionReached(): LiveData<Unit> = maxSelectionReachedData
 
-    fun setHasPermission(hasPermission: Boolean) = hasPermissionData.postValue(hasPermission)
+    fun setHasPermission(hasPermission: Boolean) {
+        hasPermissionData.postValue(hasPermission)
+    }
 
     fun setMaxSelectionCount(count: Int) {
         maxSelectionCount = count
     }
 
     fun clearSelected() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
             val media = requireNotNull(mediaData.value).map { it.copy(selected = false) }
             val array = arrayListOf<SelectableMedia>()
             array.addAll(media)
@@ -65,7 +74,7 @@ internal class MediaPickerViewModel : ViewModel() {
     }
 
     fun toggleSelected(selectableMedia: SelectableMedia) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
             val selected = requireNotNull(selectedData.value)
 
             when {
@@ -80,19 +89,39 @@ internal class MediaPickerViewModel : ViewModel() {
             val media = requireNotNull(mediaData.value)
             media.indexOfFirst { item -> item.id == selectableMedia.id }
                 .takeIf { position -> position != -1 }
-                ?.let { position -> media[position] = selectableMedia.copy(selected = !selectableMedia.selected) }
+                ?.let { position ->
+                    media[position] = selectableMedia.copy(selected = !selectableMedia.selected)
+                }
 
             selectedData.postValue(selected)
             mediaData.postValue(media)
         }
     }
 
-    private fun canSelectMore(size: Int) = maxSelectionCount == SELECTION_UNDEFINED || maxSelectionCount > size
+    private fun canSelectMore(size: Int): Boolean =
+            maxSelectionCount == SELECTION_UNDEFINED || maxSelectionCount > size
 
     private fun readValueAtCursor(cursor: Cursor): SelectableMedia {
         val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
+
+        val mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE))
+        val type = if (mimeType.contains("video")) {
+            SelectableMedia.Type.VIDEO
+        } else SelectableMedia.Type.IMAGE
+
         val uri = "file://${cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))}"
-        return SelectableMedia(id, Uri.parse(uri), false)
+
+        val duration = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION))
+        } else {
+            MediaMetadataRetriever().use {
+                it.setDataSource(uri)
+
+                return@use it.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+            }
+        }
+
+        return SelectableMedia(id, type, Uri.parse(uri), false, duration)
     }
 
 }

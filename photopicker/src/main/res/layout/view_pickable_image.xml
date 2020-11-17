@@ -17,13 +17,13 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@tools:sample/backgrounds/scenic" />
 
-    <com.google.android.material.checkbox.MaterialCheckBox
+    <CheckBox
         android:id="@+id/checkBox"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_margin="5dp"
         android:background="@null"
-        android:button="@drawable/checkbox_selector"
+        android:button="@drawable/ic_picker_checkbox"
         android:clickable="false"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -10,7 +10,9 @@ class App: Application() {
         super.onCreate()
 
         MediaPicker.init(
+//            loader = CoilImageLoader(),
             loader = GlideImageLoader(),
+//            loader = PicassoImageLoader(),
             authority = "lv.chi.sample.fileprovider"
         )
     }

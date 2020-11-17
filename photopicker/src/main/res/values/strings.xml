@@ -2,6 +2,7 @@
     <string name="picker_app_name">Picker</string>
     <string name="picker_gallery">Gallery</string>
     <string name="picker_camera">Camera</string>
+    <string name="picker_video">Video</string>
     <string name="picker_select">Select</string>
     <string name="picker_media_permissions_hint">Grant media permission for easier\ngallery access</string>
     <string name="picker_empty_media">Your media library is empty</string>
