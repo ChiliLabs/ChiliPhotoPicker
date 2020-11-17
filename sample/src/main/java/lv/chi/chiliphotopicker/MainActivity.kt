@@ -24,10 +24,10 @@ class MainActivity : AppCompatActivity(), MediaPickerFragment.Callback {
 
     private fun openPicker() {
         MediaPickerFragment.newInstance(
-            multiple = true,
+            multiple = false,
             allowCamera = true,
-            maxSelection = 5,
-            pickerMode = MediaPickerFragment.PickerMode.ANY,
+            maxSelection = 1,
+            pickerMode = MediaPickerFragment.PickerMode.IMAGE,
             theme = R.style.MediaPicker_Dark
         ).show(supportFragmentManager, "picker")
     }

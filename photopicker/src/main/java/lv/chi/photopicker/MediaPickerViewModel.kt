@@ -111,14 +111,19 @@ internal class MediaPickerViewModel : ViewModel() {
 
         val uri = "file://${cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))}"
 
-        val duration = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION))
-        } else {
-            MediaMetadataRetriever().use {
-                it.setDataSource(uri)
+        val duration = if (type == SelectableMedia.Type.VIDEO) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION))
+            } else {
+                MediaMetadataRetriever().use {
+                    it.setDataSource(uri)
 
-                return@use it.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+                    return@use it.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                        .toLong()
+                }
             }
+        } else {
+            null
         }
 
         return SelectableMedia(id, type, Uri.parse(uri), false, duration)
