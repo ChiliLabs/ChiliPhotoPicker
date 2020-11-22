@@ -5,10 +5,12 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.lifecycle.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import lv.chi.photopicker.adapter.SelectableMedia
 import lv.chi.photopicker.utils.SingleLiveEvent
-import kotlin.collections.ArrayList
+import java.util.concurrent.TimeUnit
 
 internal class MediaPickerViewModel : ViewModel() {
 
@@ -25,7 +27,7 @@ internal class MediaPickerViewModel : ViewModel() {
     private val hasContentData = MutableLiveData(false)
     private val inProgressData = MutableLiveData(true)
     private val hasPermissionData = MutableLiveData(false)
-    private val selectedData = MutableLiveData<ArrayList<Uri>>(arrayListOf())
+    private val selectedData = MutableLiveData<ArrayList<SelectableMedia>>(arrayListOf())
     private val mediaData = MutableLiveData<ArrayList<SelectableMedia>>()
     private val maxSelectionReachedData = SingleLiveEvent<Unit>()
 
@@ -34,7 +36,7 @@ internal class MediaPickerViewModel : ViewModel() {
     fun getHasContent(): LiveData<Boolean> = Transformations.distinctUntilChanged(hasContentData)
     fun getInProgress(): LiveData<Boolean> = inProgressData
     fun getHasPermission(): LiveData<Boolean> = hasPermissionData
-    fun getSelected(): LiveData<ArrayList<Uri>> = selectedData
+    fun getSelected(): LiveData<ArrayList<SelectableMedia>> = selectedData
     fun getMedia(): LiveData<ArrayList<SelectableMedia>> = mediaData
     fun getMaxSelectionReached(): LiveData<Unit> = maxSelectionReachedData
 
@@ -78,8 +80,8 @@ internal class MediaPickerViewModel : ViewModel() {
             val selected = requireNotNull(selectedData.value)
 
             when {
-                selectableMedia.selected -> selected.remove(selectableMedia.uri)
-                canSelectMore(selected.size) -> selected.add(selectableMedia.uri)
+                selectableMedia.selected -> selected.removeAll { it.id == selectableMedia.id }
+                canSelectMore(selected.size) -> selected.add(selectableMedia)
                 else -> {
                     maxSelectionReachedData.postValue(Unit)
                     return@launch
@@ -102,31 +104,97 @@ internal class MediaPickerViewModel : ViewModel() {
             maxSelectionCount == SELECTION_UNDEFINED || maxSelectionCount > size
 
     private fun readValueAtCursor(cursor: Cursor): SelectableMedia {
-        val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
-
         val mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE))
-        val type = if (mimeType.contains("video")) {
+
+        val type = if (mimeType.contains("video", ignoreCase = true)) {
             SelectableMedia.Type.VIDEO
-        } else SelectableMedia.Type.IMAGE
-
-        val uri = "file://${cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))}"
-
-        val duration = if (type == SelectableMedia.Type.VIDEO) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION))
-            } else {
-                MediaMetadataRetriever().use {
-                    it.setDataSource(uri)
-
-                    return@use it.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                        .toLong()
-                }
-            }
         } else {
-            null
+            SelectableMedia.Type.IMAGE
         }
 
-        return SelectableMedia(id, type, Uri.parse(uri), false, duration)
+        return when (type) {
+            SelectableMedia.Type.IMAGE -> {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns._ID))
+                val uri = "file://${cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATA))}"
+                val displayName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DISPLAY_NAME))
+                val width = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.WIDTH))
+                val height = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.HEIGHT))
+
+                var dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATE_ADDED))
+                dateAdded = TimeUnit.SECONDS.toMillis(dateAdded)
+
+                var dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATE_MODIFIED))
+                dateModified = TimeUnit.SECONDS.toMillis(dateModified)
+
+                val dateTaken = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATE_TAKEN))
+                } else {
+                    null
+                }
+
+                val size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.SIZE))
+
+                SelectableMedia(
+                    id = id,
+                    type = type,
+                    uri = Uri.parse(uri),
+                    displayName = displayName,
+                    width = width,
+                    height = height,
+                    dateAdded = dateAdded,
+                    dateModified = dateModified,
+                    dateTaken = dateTaken,
+                    size = size,
+                    selected = false
+                )
+            }
+            SelectableMedia.Type.VIDEO -> {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns._ID))
+                val uri = "file://${cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DATA))}"
+                val displayName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DISPLAY_NAME))
+                val width = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.WIDTH))
+                val height = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.HEIGHT))
+
+                val duration = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION))
+                } else {
+                    val retriever = MediaMetadataRetriever()
+                    retriever.setDataSource(uri)
+                    val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+                    retriever.close()
+                    duration
+                }
+
+                var dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DATE_ADDED))
+                dateAdded = TimeUnit.SECONDS.toMillis(dateAdded)
+
+                var dateModified = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DATE_MODIFIED))
+                dateModified = TimeUnit.SECONDS.toMillis(dateModified)
+
+                val dateTaken = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DATE_TAKEN))
+                } else {
+                    null
+                }
+
+                val size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.SIZE))
+
+                SelectableMedia(
+                    id = id,
+                    type = type,
+                    uri = Uri.parse(uri),
+                    displayName = displayName,
+                    width = width,
+                    height = height,
+                    duration = duration,
+                    dateAdded = dateAdded,
+                    dateModified = dateModified,
+                    dateTaken = dateTaken,
+                    size = size,
+                    selected = false
+                )
+            }
+        }
     }
 
 }

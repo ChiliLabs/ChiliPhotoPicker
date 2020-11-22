@@ -4,19 +4,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.textview.MaterialTextView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import lv.chi.photopicker.R
 import lv.chi.photopicker.loader.ImageLoader
 
 internal class MediaPickerAdapter(
-    private val lifecycleScope: LifecycleCoroutineScope,
     private val onMediaClick: (SelectableMedia) -> Unit,
     private val multiple: Boolean,
     private val imageLoader: ImageLoader

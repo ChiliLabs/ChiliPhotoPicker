@@ -15,14 +15,16 @@ class PickerDialog(
 
     companion object {
         fun getThemeResId(context: Context, themeId: Int): Int {
-            var theme = themeId
-            if (theme == 0) {
+            return if (themeId == 0) {
                 val outValue = TypedValue()
-                theme = if (context.theme.resolveAttribute(R.attr.bottomSheetDialogTheme, outValue, true))
+                if (context.theme.resolveAttribute(R.attr.bottomSheetDialogTheme, outValue, true)) {
                     outValue.resourceId
-                else R.style.Theme_Design_Light_BottomSheetDialog
+                } else {
+                    R.style.Theme_MaterialComponents_Light_BottomSheetDialog
+                }
+            } else {
+                themeId
             }
-            return theme
         }
     }
 
@@ -32,10 +34,10 @@ class PickerDialog(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window?.apply {
-            clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        }
+
+        window?.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 
 }

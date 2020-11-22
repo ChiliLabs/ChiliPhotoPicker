@@ -65,8 +65,10 @@ internal class CameraActivity : AppCompatActivity() {
                     Request.CAMERA_ACCESS_PERMISSION
                 )
             }
-        } else savedInstanceState.getParcelable<Uri>(Key.OUTPUT)?.let {
-            output = it
+        } else {
+            savedInstanceState.getParcelable<Uri>(Key.OUTPUT)?.let {
+                output = it
+            }
         }
     }
 
@@ -74,7 +76,9 @@ internal class CameraActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == Request.IMAGE_CAPTURE) {
             if (resultCode == RESULT_OK) {
-                setResult(RESULT_OK, Intent().setData(output))
+                val intent = Intent()
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, output)
+                setResult(RESULT_OK, intent)
             } else {
                 contentResolver.delete(output, null, null)
             }
@@ -99,14 +103,14 @@ internal class CameraActivity : AppCompatActivity() {
         outState.putParcelable(Key.OUTPUT, output)
     }
 
-    private fun provideImageUri() = createTempFile(
+    private fun provideImageUri(): Uri = createTempFile(
         suffix = ".jpg",
         directory = File(this.cacheDir, "camera").apply { mkdirs() }
     )
         .apply { deleteOnExit() }
         .providerUri(this)
 
-    private fun provideVideoUri() = createTempFile(
+    private fun provideVideoUri(): Uri = createTempFile(
         suffix = ".mp4",
         directory = File(this.cacheDir, "camera").apply { mkdirs() }
     )

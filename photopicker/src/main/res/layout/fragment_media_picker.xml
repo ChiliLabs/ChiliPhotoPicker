@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/transparent"
     android:fitsSystemWindows="false"
-    tools:theme="@style/MediaPicker.Dark">
+    tools:theme="@style/MediaPicker.Light">
 
     <FrameLayout
         android:id="@+id/bottomSheet"
@@ -31,6 +31,10 @@
                 android:gravity="center"
                 android:text="@string/picker_gallery"
                 app:icon="?pickerGalleryIcon"
+                app:iconGravity="textStart"
+                app:iconSize="22dp"
+                app:iconPadding="7dp"
+                app:iconTint="?pickerControlColor"
                 app:layout_constraintEnd_toStartOf="@id/cameraButton"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -44,6 +48,10 @@
                 android:gravity="center"
                 android:text="@string/picker_camera"
                 app:icon="?pickerCameraIcon"
+                app:iconGravity="textStart"
+                app:iconSize="22dp"
+                app:iconPadding="7dp"
+                app:iconTint="?pickerControlColor"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/galleryButton"
                 app:layout_constraintTop_toTopOf="parent"

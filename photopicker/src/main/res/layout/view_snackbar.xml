@@ -14,7 +14,7 @@
         android:backgroundTint="@null"
         app:icon="@drawable/ic_picker_cancel"
         app:iconGravity="textStart"
-        app:iconTint="@color/black"
+        app:iconTint="?attr/pickerSecondaryColor"
         app:iconPadding="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
