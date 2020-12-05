@@ -3,42 +3,46 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
-    android:background="?attr/pickerBackgroundColor">
+    android:layout_height="64dp">
 
-    <ImageView
-        android:id="@+id/cancel"
-        android:layout_width="wrap_content"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/cancelButton"
+        style="@style/TextButton"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:background="?selectableItemBackgroundBorderless"
-        android:padding="8dp"
+        android:backgroundTint="@null"
+        app:icon="@drawable/ic_picker_cancel"
+        app:iconGravity="textStart"
+        app:iconTint="?attr/pickerSecondaryColor"
+        app:iconPadding="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_picker_cancel" />
+        app:shapeAppearance="@style/ShapeAppearance.Rounded" />
 
     <TextView
-        android:id="@+id/count"
+        android:id="@+id/countView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="10dp"
         android:textColor="?attr/pickerSecondaryColor"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/cancel"
+        app:layout_constraintStart_toEndOf="@+id/cancelButton"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="3 photos selected" />
 
-    <TextView
-        android:id="@+id/select"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/selectButton"
+        style="@style/TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:background="?selectableItemBackgroundBorderless"
         android:text="@string/picker_select"
         android:textAllCaps="true"
         android:textColor="?attr/pickerControlColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

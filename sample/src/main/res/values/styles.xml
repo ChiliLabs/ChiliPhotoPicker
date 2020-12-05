@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="SamplePhotoPicker" parent="ChiliPhotoPicker.Light">
+    <style name="SampleMediaPicker" parent="MediaPicker.Light">
         <item name="pickerCornerRadius">@dimen/samplePickerCornerRadius</item>
-        <item name="pickerBackgroundColor">#EAFBEA</item>
-        <item name="pickerControlColor">#6F9A8D</item>
+        <item name="pickerBackgroundColor">#FFFFFF</item>
+        <item name="pickerSecondaryColor">#FFFFFF</item>
+        <item name="pickerControlColor">#007AFF</item>
     </style>
+
+    <style name="Snackbar" parent="Widget.MaterialComponents.Snackbar">
+        <item name="android:background">@drawable/bg_snackbar</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="animationMode">fade</item>
+        <item name="elevation">8dp</item>
+    </style>
+
+    <style name="SnackbarTextButton" parent="Widget.MaterialComponents.Button.TextButton.Snackbar">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
 </resources>

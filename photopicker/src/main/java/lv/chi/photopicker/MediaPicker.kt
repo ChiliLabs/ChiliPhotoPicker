@@ -2,7 +2,7 @@ package lv.chi.photopicker
 
 import lv.chi.photopicker.loader.ImageLoader
 
-object ChiliPhotoPicker {
+object MediaPicker {
 
    /**
     * One time setup for required configurations.

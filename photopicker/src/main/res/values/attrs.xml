@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <attr name="pickerBackgroundColor" format="reference|color" />
     <attr name="pickerPrimaryColor" format="reference|color" />
     <attr name="pickerSecondaryColor" format="reference|color" />

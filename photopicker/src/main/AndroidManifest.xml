@@ -4,10 +4,10 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application>
-
         <activity
             android:name=".utils.CameraActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+            android:theme="@style/Theme.MaterialComponents.NoActionBar.Bridge" />
     </application>
+
 </manifest>

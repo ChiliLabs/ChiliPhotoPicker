@@ -15,28 +15,60 @@ import java.io.File
 
 internal class CameraActivity : AppCompatActivity() {
 
+    companion object {
+        fun newIntent(context: Context, captureMode: CaptureMode): Intent =
+            Intent(context, CameraActivity::class.java)
+                .putExtra(Key.CAPTURE_MODE, captureMode)
+    }
+
+    enum class CaptureMode {
+        IMAGE,
+        VIDEO
+    }
+
+    private object Request {
+        const val IMAGE_CAPTURE = 1
+        const val CAMERA_ACCESS_PERMISSION = 2
+    }
+
+    private object Key {
+        const val CAPTURE_MODE = "capture_mode"
+        const val OUTPUT = "output"
+    }
+
+    private lateinit var captureMode: CaptureMode
     private lateinit var output: Uri
 
     private var permissionGranted: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= 23) {
-            permissionGranted = hasCameraPermission()
-        } else permissionGranted = true
+
+        captureMode = intent.getSerializableExtra(Key.CAPTURE_MODE) as CaptureMode
+
+        permissionGranted = if (Build.VERSION.SDK_INT >= 23) {
+            hasCameraPermission()
+        } else true
 
         if (savedInstanceState == null) {
-            output = provideImageUri()
-            if (permissionGranted) requestImageCapture()
-            else {
+            output = when (captureMode) {
+                CaptureMode.IMAGE -> provideImageUri()
+                CaptureMode.VIDEO -> provideVideoUri()
+            }
+
+            if (permissionGranted) {
+                requestImageCapture()
+            } else {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.CAMERA),
                     Request.CAMERA_ACCESS_PERMISSION
                 )
             }
-        } else savedInstanceState.getParcelable<Uri>(Key.OUTPUT)?.let {
-            output = it
+        } else {
+            savedInstanceState.getParcelable<Uri>(Key.OUTPUT)?.let {
+                output = it
+            }
         }
     }
 
@@ -44,7 +76,9 @@ internal class CameraActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == Request.IMAGE_CAPTURE) {
             if (resultCode == RESULT_OK) {
-                setResult(RESULT_OK, Intent().setData(output))
+                val intent = Intent()
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, output)
+                setResult(RESULT_OK, intent)
             } else {
                 contentResolver.delete(output, null, null)
             }
@@ -69,16 +103,28 @@ internal class CameraActivity : AppCompatActivity() {
         outState.putParcelable(Key.OUTPUT, output)
     }
 
-    private fun provideImageUri() = createTempFile(
+    private fun provideImageUri(): Uri = createTempFile(
         suffix = ".jpg",
         directory = File(this.cacheDir, "camera").apply { mkdirs() }
     )
         .apply { deleteOnExit() }
         .providerUri(this)
 
-    private fun requestImageCapture() =
+    private fun provideVideoUri(): Uri = createTempFile(
+        suffix = ".mp4",
+        directory = File(this.cacheDir, "camera").apply { mkdirs() }
+    )
+        .apply { deleteOnExit() }
+        .providerUri(this)
+
+    private fun requestImageCapture() {
+        val cameraIntent = when (captureMode) {
+            CaptureMode.IMAGE -> Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            CaptureMode.VIDEO -> Intent(MediaStore.ACTION_VIDEO_CAPTURE)
+        }
+
         startActivityForResult(
-            Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            Intent(cameraIntent)
                 .putExtra(MediaStore.EXTRA_OUTPUT, output)
                 .also { intent ->
                     grantUriPermission(
@@ -89,22 +135,12 @@ internal class CameraActivity : AppCompatActivity() {
                 },
             Request.IMAGE_CAPTURE
         )
-
-    private fun hasCameraPermission() = ContextCompat.checkSelfPermission(
-        this,
-        Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
-
-    private object Request {
-        const val IMAGE_CAPTURE = 1
-        const val CAMERA_ACCESS_PERMISSION = 2
     }
 
-    private object Key {
-        const val OUTPUT = "output"
-    }
+    private fun hasCameraPermission() =
+        ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
 
-    companion object {
-        fun createIntent(context: Context) = Intent(context, CameraActivity::class.java)
-    }
 }

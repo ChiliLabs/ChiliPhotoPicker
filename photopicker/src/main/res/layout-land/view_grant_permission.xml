@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/permission_text"
+        android:id="@+id/permissionTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
@@ -14,21 +14,21 @@
         android:text="@string/picker_media_permissions_hint"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="?attr/pickerPrimaryColor"
-        app:layout_constraintEnd_toStartOf="@+id/grant"
+        app:layout_constraintEnd_toStartOf="@+id/grantTextView"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/grant"
+        android:id="@+id/grantTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?selectableItemBackgroundBorderless"
         android:text="@string/picker_allow"
-        android:textAppearance="@style/TextAppearance.PhotoPicker.Button"
-        app:layout_constraintBottom_toBottomOf="@+id/permission_text"
+        android:textAppearance="@style/TextAppearance.MediaPicker.Button"
+        app:layout_constraintBottom_toBottomOf="@+id/permissionTextView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/permission_text"
-        app:layout_constraintTop_toTopOf="@+id/permission_text" />
+        app:layout_constraintStart_toEndOf="@+id/permissionTextView"
+        app:layout_constraintTop_toTopOf="@+id/permissionTextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
