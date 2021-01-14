@@ -71,11 +71,21 @@ PhotoPickerFragment.newInstance(
         theme = R.style.ChiliPhotoPicker_Dark
 ).show(supportFragmentManager, YOUR_TAG)
 ```
+
 Notes:
 Picker will throw exception if:
 - `loader` was not initialized
 - `authority` was null while accessing camera
 
+If you're targeting `API > 30`, due to the new restrictions on package visibility introduced in Android 11, it's required to add the appropriate <queries> element in `AndroidManifest.xml`:
+```xml
+<queries>
+    <intent>
+        <action android:name="android.media.action.IMAGE_CAPTURE" />
+    </intent>
+</queries>
+```
+    
 ### ImageLoader
 
 We don't want to depend on many image loading libraries, so we have simple `ImageLoader` interface, which you can implement using your preferred library (Glide, Picasso, Coil, etc.)
